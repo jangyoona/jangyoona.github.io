@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>공지사항 작성</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="../../plugins/summernote/summernote-bs4.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>메일쓰기</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">메일쓰기</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container">
+        <div>
+          <!-- /.col -->
+          <div>
+            <div class="card card-primary card-outline">
+              <form action="write" method="post" enctype="multipart/form-data">
+              <div class="card-header">
+                <h5 class="card-title">
+                  <a th:href="@{/board/list}" class="btn btn-primary btn-block mb-3">공지사항 목록</a>
+                </h5>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div class="form-group" >
+                  <input type="hidden" name="empId"
+                         th:value="${#ctx.session.loginUser.empId}">
+                  <input type="hidden" name="positionName"
+                         th:value="${employeePosition.positionName}">
+                </div>
+                <div class="form-group">
+                  <input class="form-control" name="boardTitle" placeholder="제목:">
+                </div>
+                <div class="form-group" >
+                    <textarea id="compose-textarea" name="boardContent" class="form-control" style="height: 300px" >
+
+                    </textarea>
+                </div>
+                <div class="form-group" id="fileInputsContainer">
+                  <input type="file" name="attach[]"/>
+                  <p class="help-block">Max. 10MB per file</p>
+                </div>
+                <button type="button" id="addFileButton" class="btn btn-primary">추가</button>
+                <button type="button" id="removeFileButton" class="btn btn-primary">제거</button>
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer">
+                <div class="float-right">
+                  <button type="submit" class="btn btn-primary"><i class="far fa-envelope"></i> 작성</button>
+                </div>
+                <button type="reset" class="btn btn-default btn-cancel"><i class="fas fa-times"></i> 취소/돌아가기</button>
+              </div>
+              <!-- /.card-footer -->
+              </form>
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- Summernote -->
+<script src="../../plugins/summernote/summernote-bs4.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script th:inline="javascript">
+  $(function () {
+
+    //Add text editor
+    $('#compose-textarea').summernote({
+      height: 400
+    });
+
+    // 현재 페이지의 URL을 가져옵니다.
+    const currentUrl = window.location.href;
+    let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+    const pathIndex = currentPath.indexOf("?");
+    if (pathIndex != -1) {
+      currentPath = currentPath.substring(0, pathIndex);
+    }
+    // 현재 페이지의 URL과 sidebar의 URL을 비교
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    // URL에서 쿼리 파라미터를 가져오는 함수
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    // 취소/돌아가기 버튼
+	$(function() {
+		$('.btn-cancel').on('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			location.href = "list";
+		});
+	});
+     // 첨부파일 추가 버튼
+     document.getElementById('addFileButton').addEventListener('click', function() {
+        // 새로운 div 요소 생성
+        const newFileInputContainer = document.createElement('div');
+        newFileInputContainer.className = 'form-group';
+
+        // 새로운 파일 입력 요소 생성
+        const newFileInput = document.createElement('input');
+        newFileInput.type = 'file';
+        newFileInput.name = 'attach[]'; // 배열 형태로 설정하여 서버에서 여러 파일을 받을 수 있도록 함
+
+        // 도움말 텍스트 생성
+        const helpBlock = document.createElement('p');
+        helpBlock.className = 'help-block';
+        helpBlock.textContent = 'Max. 10MB per file';
+
+        // 새로운 파일 입력 요소를 컨테이너에 추가
+        newFileInputContainer.appendChild(newFileInput);
+        newFileInputContainer.appendChild(helpBlock);
+
+        // 기존 컨테이너에 새로운 파일 입력 컨테이너 추가
+        document.getElementById('fileInputsContainer').appendChild(newFileInputContainer);
+    });
+    // 첨부파일 제거 버튼
+    document.getElementById('removeFileButton').addEventListener('click', function() {
+            const container = document.getElementById('fileInputsContainer');
+            const lastChild = container.lastElementChild;
+            if (lastChild) {
+                container.removeChild(lastChild);
+            }
+        });
+
+    const empId = /*[[${session.loginUser.empId}]]*/ 0;
+    initializeWebSocket(empId);
+
+  });
+</script>
+</body>
+</html>

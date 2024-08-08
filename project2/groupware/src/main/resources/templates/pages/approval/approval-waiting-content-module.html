@@ -1,0 +1,44 @@
+<div class="card-header">
+    <h3 class="card-title">
+        전자결재 | <strong>결재대기 문서함</strong>
+    </h3>
+    <br>
+    <hr>
+</div>
+<!-- /.card-header -->
+<!-- Horizontal Form -->
+<div class="card card-info">
+    <div class="card-header">
+        <h3 class="card-title">approval-active-list</h3>
+    </div>
+    <table xmlns:th="http://www.thymeleaf.org">
+        <tr>
+            <th>기안일</th>
+            <th>기안자</th>
+            <th>결재양식</th>
+            <th>제목</th>
+            <th>문서번호</th>
+            <th>결재상태</th>
+        </tr>
+        <tr th:each="approval : ${approvals}">
+            <td th:text="${#dates.format(approval.approvalDate, 'yyyy:MM:dd')}"></td>
+            <td th:text="${approval.empName}"></td>
+            <td th:text="${approval.approvalForm}"></td>
+            <td th:text="${approval.approvalTitle}"></td>
+            <td th:text="${approval.approvalDocumentNo}"></td>
+            <td>
+                <a th:id="approval-waiting-detail-btn"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-waiting-detail?approvalDocumentNo=' + ${approval.approvalDocumentNo}}"
+                   class="btn btn-block bg-gradient-info"></a>
+            </td>
+        </tr>
+    </table>
+    <!-- /.card-header -->
+    <!-- form start -->
+</div>
+<nav aria-label="Page navigation example" id="navigation">
+    <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+        [(${ pager })]
+    </ul>
+</nav>

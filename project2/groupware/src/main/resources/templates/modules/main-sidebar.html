@@ -1,0 +1,236 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4" xmlns:th="http://www.thymeleaf.org">
+    <!-- Brand Logo -->
+    <a th:href="@{'/home'}" class="brand-link">
+        <img src="/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">Green Company</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user (optional) -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <img src="/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+            </div>
+            <div class="info">
+                <a th:href="@{'/myPage/my-page'}" class="d-block" th:if="${ !#lists.isEmpty(session.loginUser) }" th:text="|${ #ctx.session.loginUser.empName }|"></a>
+                <a href="#" class="d-block" th:unless="${ !#lists.isEmpty(session.loginUser) }">Guest</a>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Add icons to the links using the .nav-icon class
+                     with font-awesome or any other icon font library -->
+                <!-- 사이드바 항목 추가할 때 이 주석 참고하세요! (DropDown 되는 항목) -->
+                <!-- <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            Dashboard
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="../../index.html" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Dashboard v1</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="../../index2.html" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Dashboard v2</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="../../index3.html" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Dashboard v3</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li> -->
+
+                <!-- 사이드바 항목 추가할 때 이 주석 참고하세요! (DropDown 없는 항목) -->
+                <!-- <li class="nav-item">
+                    <a href="pages/gallery.html" class="nav-link">
+                        <i class="nav-icon far fa-image"></i>
+                        <p>
+                            Gallery
+                        </p>
+                    </a>
+                </li> -->
+
+
+
+                <!-- Form Start -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <p>
+                            전자결재
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/forms/approval/approval-write" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>전자결재 | 작성</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/forms/approval/approval-list" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>전자결재 | 문서함</p>
+                            </a>
+                        </li>
+                        <!-- 주임 이상만볼 수 있게-->
+                        <li class="nav-item">
+                            <a href="/forms/approval/approval-waiting-list" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>전자결재 | 대기문서함</p>
+                            </a>
+                        </li>
+                        <!-- -->
+                        <li class="nav-item">
+                            <a href="/forms/approval/approval-form-list" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>전자결재 | 양식리스트</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/forms/approval/approval-line-list" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>전자결재 | 결재선 등록</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- Form End -->
+
+                <!-- Mail box Start -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <p>
+                            사내메일
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/mailbox/all" class="nav-link ">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>메일함</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/mailbox/write" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>메일쓰기</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- Mail box End -->
+
+                <!-- Project 관리 Start -->
+                <li class="nav-item">
+                    <a href="/schedule/list" class="nav-link">
+                        <p>프로젝트 관리</p>
+                    </a>
+                </li>
+                <!-- Project 관리 End -->
+
+                <li class="nav-item">
+                    <a href="/board/list" class="nav-link">
+                        <p>공지사항</p>
+                    </a>
+                </li>
+
+                <!--근태, 인사관리 (임시)-->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <p>
+                            부서별 근태, 사원 검색
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/attendance/attendance-list" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>부서별 금일 근태</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/human-resources/emp-contacts" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>사원 정보 검색</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- 근태 인사관리 끝 -->
+
+                <li class="nav-item" th:if="${ session.loginUser.deptNo == 6 }">
+                    <a href="#" class="nav-link">
+                        <p>
+                            관리자 메뉴
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/attendance/attendance-edit" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>근태 수정</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/account/modify?empId=24071241" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>사원 정보 수정</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/account/register" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>사원등록</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item" th:if="${ session.loginUser.deptNo == 6 }">
+                    <a href="#" class="nav-link">
+                        <p>
+                            조직도 테스트
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/modules/organization" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>1번</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/modules/organization2" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>2번</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+</aside>

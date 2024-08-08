@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+
+    <!-- jQuery -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Bootstrap Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- fullCalendar -->
+    <link rel="stylesheet" href="/plugins/fullcalendar/main.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">-->
+<style>
+.container {
+    width: 80%;
+    max-width: 600px;
+
+}
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-bar {
+    width: 100%;
+    max-width: 1300px; /* 진행 막대의 최대 너비 설정 */
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress {
+    height: 30px;
+    background-color: #28a745;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    background-size: 2rem 2rem;
+    animation: progress-bar-stripes 1s linear infinite;
+    width: 0;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+}
+.progress img {
+    height: 35px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0;
+}
+.time-label {
+  font-weight: bold;
+  margin: 0 2px;
+}
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 2rem 0;
+  }
+}
+#button-container {
+    display: flex;
+    align-items: center;
+}
+#after6pm-left, #after6pm-right {
+    display: none;
+    height: 150px;
+    width: 150px;
+    margin: 0 10px;
+}
+
+</style>
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <!--            <h1>Blank21321312312321 Page</h1>-->
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/home}">Home</a></li>
+                            <li class="breadcrumb-item active" ><a th:href="@{/account/logout}" style="color:gray;">로그아웃</a></li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <div class="row" style="justify-content: center;">
+                <div th:if="${#dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and (todayAttendance.attdStatus == '미출근' or todayAttendance.attdStatus == '휴무')}">
+                    <div th:replace="~{/modules/attendance-check-in}"></div>
+                </div>
+                <div th:if="${#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00'}">
+                    <div id="button-container">
+                        <img id="after6pm-left" src="../dist/img/alarm.gif" alt="After 6pm Left">
+                        <span th:replace="~{/modules/attendance-check-out}"></span>
+                        <img id="after6pm-right" src="../dist/img/alarm.gif" alt="After 6pm Right">
+                    </div>
+                </div>
+                <div th:if="${(#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00') or (todayAttendance.attdStatus == '휴가')}">
+                    <div th:replace="~{/modules/attendance-button}"></div>
+                </div>
+            </div>
+            <hr>
+                <div class="progress-bar-container">
+                    <span class="time-label">09:00</span>
+                    <span class="progress-bar">
+                        <span id="progress" class="progress">
+                            <img th:if="${currentHour >= 13 && currentHour < 14}" src="../dist/img/lunch.gif" th:src="@{/dist/img/lunch.gif}">
+                            <img th:if="${(currentHour >= 9 && currentHour < 13) || (currentHour > 14 && currentHour < 18)}" src="../dist/img/running.gif" th:src="@{/dist/img/running.gif}">
+                            <img th:if="${(currentHour >= 6 && currentHour < 9)}" src="../dist/img/check-in.gif" th:src="@{/dist/img/check-in.gif}">
+                            <img th:if="${(currentHour >= 18 && currentHour <= 23) || (currentHour >= 0 && currentHour < 6)}" src="../dist/img/check-out.gif" th:src="@{/dist/img/check-out.gif}">
+                        </span>
+                    </span>
+                    <span class="time-label">18:00</span>
+                </div>
+            <hr>
+            <div th:replace="~{/modules/calendar}"></div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- fullCalendar 2.2.5 -->
+<script src="/plugins/moment/moment.min.js"></script>
+<script src="/plugins/fullcalendar/main.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script type="text/javascript">
+    $(function () {
+      // 현재 페이지의 URL을 가져옵니다.
+      const currentUrl = window.location.href;
+      let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+
+      <!--url로 전달된 parameter값을 url에서 제거하는 코드-->
+
+      const pathIndex = currentPath.indexOf("?");
+      if (pathIndex != -1) {
+        currentPath = currentPath.substring(0, pathIndex);
+      }
+
+      <!--end-->
+
+      // 현재 페이지의 URL과 sidebar의 URL을 비교
+      $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+      // 캘린더 호출
+      refreshCalendar();
+
+      const now = new Date();
+        const currentHour = now.getHours();
+        if (currentHour >= 16) {
+            document.getElementById('after6pm-left').style.display = 'block';
+            document.getElementById('after6pm-right').style.display = 'block';
+        }
+    });
+    function updateProgressBar() {
+    const progressElement = document.getElementById('progress');
+
+    // Define start and end times (in minutes)
+    const startHour = 9;
+    const endHour = 18;
+
+    // Get current time
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    // Convert times to minutes
+    const startTime = startHour * 60;
+    const endTime = endHour * 60;
+    const currentTime = currentHour * 60 + currentMinutes;
+
+    let percentage;
+
+    if (currentTime <= startTime) {
+        percentage = 0;
+    } else if (currentTime >= endTime) {
+        percentage = 100;
+    } else {
+        // Calculate the percentage
+        percentage = ((currentTime - startTime) / (endTime - startTime)) * 100;
+    }
+
+    // Update progress bar width
+    progressElement.style.width = percentage + '%';
+}
+
+
+// Update progress bar on page load
+updateProgressBar();
+
+// Optionally, update every minute
+setInterval(updateProgressBar, 60000);
+
+</script>
+
+</body>
+</html>

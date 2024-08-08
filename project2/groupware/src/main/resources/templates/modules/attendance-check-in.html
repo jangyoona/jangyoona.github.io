@@ -1,0 +1,232 @@
+<style>
+    .pushable {
+      position: relative;
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      outline-offset: 4px;
+      transition: filter 250ms;
+    }
+    .shadow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 25px;
+      background: hsl(0deg 0% 0% / 0.25);
+      will-change: transform;
+      transform: translateY(2px);
+      transition:
+        transform
+        600ms
+        cubic-bezier(.3, .7, .4, 1);
+    }
+    .edge {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      background: linear-gradient(
+        to left,
+        hsl(220deg 100% 16%) 0%,        //여기는 버튼 옆면 색깔 조정
+        hsl(220deg 100% 32%) 8%,
+        hsl(220deg 100% 32%) 92%,
+        hsl(220deg 100% 16%) 100%
+      );
+    }
+    .front {
+      display: block;
+      position: relative;
+      padding: 20px 100px;
+      border-radius: 12px;
+      font-size: 2rem;
+      color: white;
+      background: hsl(220deg 100% 50%);
+      will-change: transform;
+      transform: translateY(-4px);
+      transition:
+        transform
+        600ms
+        cubic-bezier(.3, .7, .4, 1);
+    }
+    .pushable:hover {
+      filter: brightness(110%);
+    }
+    .pushable:hover .front {
+      transform: translateY(-6px);
+      transition:
+        transform
+        250ms
+        cubic-bezier(.3, .7, .4, 1.5);
+    }
+    .pushable:active .front {
+      transform: translateY(-2px);
+      transition: transform 34ms;
+    }
+    .pushable:hover .shadow {
+      transform: translateY(4px);
+      transition:
+        transform
+        250ms
+        cubic-bezier(.3, .7, .4, 1.5);
+    }
+    .pushable:active .shadow {
+      transform: translateY(1px);
+      transition: transform 34ms;
+    }
+    .pushable:focus:not(:focus-visible) {
+      outline: none;
+    }
+</style>
+
+<!--
+
+<button type="button" id="check-in-button" class="btn btn-primary" data-toggle="modal" data-target="#modal-default">
+    출근 등록
+</button>
+-->
+
+<button type="button" id="check-in-button" class="pushable" data-toggle="modal" data-target="#modal-default">
+    <span class="edge"></span>
+    <span class="shadow"></span>
+    <span class="front">
+        출근 등록
+    </span>
+</button>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">출근 등록</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" class="form-control" id="empId" name="empId" th:value="${#ctx.session.loginUser.empId}">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">출퇴근 일자</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="currentDateInput" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">현재 시간</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="currentTimeInput" style="text-align: center; font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">--출근 등록 정보--</label>
+                            <div class="row">
+                                <div class="col-6">사원 이름
+                                    <input type="text" class="form-control" id="empName" th:value="${#ctx.session.loginUser.empName}" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                                <div class="col-6">출근 시간
+                                    <input type="text" class="form-control" id="checkInTimeInput" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">상태</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdStatus" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDetail" placeholder="근태 상태가 '정상'이 아닌경우 사유 입력란" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="checkInButton" data-dismiss="modal">등록</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function() {
+
+        $('#check-in-button').on('click', function(event) {
+
+            var today = new Date();
+
+            // 날짜 형식 설정
+            var year = today.getFullYear();
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            var currentDate = `${year}-${month}-${day}`;
+
+            // 시간 형식 설정
+            var hours = String(today.getHours()).padStart(2, '0');
+            var minutes = String(today.getMinutes()).padStart(2, '0');
+            var seconds = String(today.getSeconds()).padStart(2, '0');
+            var currentTime = `${hours}:${minutes}:${seconds}`;
+
+            // 모달 열릴 때 날짜와 시간 필드 업데이트
+            $('#currentDateInput').val(currentDate);
+            $('#currentTimeInput').val(currentTime);
+            $('#checkInTimeInput').val(currentTime);
+
+            var status = (hours < 12 || (hours == 12 && minutes == 0)) ? "근무중" : "근무중(지각)";
+            $('#attdStatus').val(status);
+        });
+
+        $('#checkInButton').on('click', function() {
+            // 오늘 날짜 (출퇴근 날짜)
+            var currentDate = $('#currentDateInput').val().trim();
+            var attdDate = currentDate;
+            // 출근 시간
+            var checkInTime = $('#checkInTimeInput').val().trim();
+            var attdIn = `${attdDate} ${checkInTime}`;
+            // 사원 아이디
+            var empId = $('#empId').val();
+            // 상태
+            var status = $('#attdStatus').val();
+            // 사유
+            var reason = $('#attdDetail').val();
+
+            // 데이터 전송
+            var data = {
+                attdDateStr: attdDate,
+                attdInStr: attdIn,
+                empId: empId,
+                attdStatus: status,
+                attdDetail: reason
+            };
+
+            console.log("Sending data:", data); // 전송 데이터 로그 확인
+
+            // AJAX 요청
+            $.ajax({
+                type: 'POST',
+                url: '/modules/attendance-check-in',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'text',
+                success: function(response, status, xhr) {
+                    console.log('AJAX 성공:', response);
+                    window.alert('출근 등록 완료');
+                    $('#modal-default').modal('hide');
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX 오류:', error);
+                }
+            });
+        });
+    });
+</script>

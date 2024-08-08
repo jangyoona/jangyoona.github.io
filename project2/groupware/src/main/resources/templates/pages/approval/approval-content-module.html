@@ -1,0 +1,67 @@
+<div class="card-header">
+    <h3 class="card-title">
+        전자결재 | <strong>기안문서함</strong>
+    </h3>
+    <br>
+    <hr>
+</div>
+<!-- /.card-header -->
+<!-- Horizontal Form -->
+<div class="card card-info">
+
+    <div class="card-header">
+        <h3 class="card-title">approval-active-list</h3>
+    </div>
+
+    <table xmlns:th="http://www.thymeleaf.org">
+        <tr>
+            <th>기안일</th>
+            <th>기안자</th>
+            <th>결재양식</th>
+            <th>제목</th>
+            <th>문서번호</th>
+            <th>결재상태</th>
+        </tr>
+        <tr th:each="approval : ${approvals}">
+            <td th:text="${#dates.format(approval.approvalDate, 'yyyy:MM:dd')}"></td>
+            <td th:text="${approval.empName}"></td>
+            <td th:text="${approval.approvalForm}"></td>
+            <td th:text="${approval.approvalTitle}"></td>
+            <td th:text="${approval.approvalDocumentNo}"></td>
+            <td>
+                <a th:if="${approval.approvalActive == '결재대기'}"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-before-detail?approvalDocumentNo=' + ${approval.approvalDocumentNo}}"
+                   class="btn btn-block btn-default"></a>
+
+                <a th:if="${approval.approvalActive == '임시저장'}"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-write-save?approvalDocumentNo=' + ${approval.approvalDocumentNo} + '&approvalForm=' + ${approval.approvalForm}}"
+                   class="btn btn-block btn-warning"></a>
+
+                <a th:if="${approval.approvalActive == '결재진행중'}"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-after-detail?approvalDocumentNo=' + ${approval.approvalDocumentNo}}"
+                   class="btn btn-block bg-gradient-info"></a>
+
+                <a th:if="${approval.approvalActive == '반려'}"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-reject-detail?approvalDocumentNo=' + ${approval.approvalDocumentNo}}"
+                   class="btn btn-block btn-danger"></a>
+
+                <a th:if="${approval.approvalActive == '결재승인'}"
+                   th:text="${approval.approvalActive}"
+                   th:href="@{'approval-last-detail?approvalDocumentNo=' + ${approval.approvalDocumentNo}}"
+                   class="btn btn-block btn-dark"></a>
+            </td>
+
+        </tr>
+    </table>
+    <!-- /.card-header -->
+    <!-- form start -->
+</div>
+<nav aria-label="Page navigation example" id="navigation">
+    <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+        [(${ pager })]
+    </ul>
+</nav>

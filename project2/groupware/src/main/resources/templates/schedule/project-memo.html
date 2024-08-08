@@ -1,0 +1,49 @@
+<div xmlns:th="http://thymeleaf.org" th:each="note, noteState : ${notes}">
+    <i class="fas fa-comments bg-yellow"></i>
+    <div class="timeline-item">
+        <div class="timeline-header">
+            <h3 th:text="${note.employee.empName}"></h3>
+            <span th:text="${note.deptName}"></span>
+            <span class="time" th:text='${ #dates.format(note.scheduleBoardWriteDate, "yyyy-MM-dd")}'><i class="fas fa-clock"></i></span>
+        </div>
+        <div class="timeline-body" th:text="${note.scheduleBoardContent}">
+        </div>
+        <form id="memoUpdateForm" class="memoUpdateForm" method="POST" action="modify-memo">
+            <input type="hidden" name="scheduleBoardNo" class="memo-no" th:data-scheduleboardno='${ note.scheduleBoardNo }' th:value='${ note.scheduleBoardNo }' />
+            <input type="hidden" name="scheduleNo" th:value='${ note.scheduleNo }' />
+            <input type="hidden" name="empId" th:if="${ #ctx.session.loginUser != null }" th:value='${ #ctx.session.loginUser.empId }' />
+            <input type="hidden" name="scheduleCategoryNo" value='1' />
+            <textarea class="form-control timeline-textarea" name="scheduleBoardContent" rows="4" style="display: none; resize: none;" th:text="${note.scheduleBoardContent}"></textarea>
+            <div class="timeline-btn-container"
+                 th:if="${ #ctx.session.loginUser.empId == note.employee.empId }">
+                <button type="button" class="btn btn-info edit-button" th:data-idx="${ noteState.index }">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-success submit-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="far fa-paper-plane"></i>
+                </button>
+                <button type="button" class="btn btn-warning cancel-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button type="button" class="btn btn-danger delete-button" th:data-idx="${ noteState.index }">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="timeline-btn-container"
+                 th:if="${ #ctx.session.loginUser.empId != note.employee.empId }">
+                <button type="button" class="btn btn-info edit-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-success submit-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="far fa-paper-plane"></i>
+                </button>
+                <button type="button" class="btn btn-warning cancel-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button type="button" class="btn btn-danger delete-button" th:data-idx="${ noteState.index }" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

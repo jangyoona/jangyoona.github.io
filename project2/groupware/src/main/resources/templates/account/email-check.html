@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이메일 인증</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <style>
+    .login-box {
+      position: absolute;
+      top: 40%;
+      left: 49%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-rows: 100px 1fr;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="hold-transition login-page">
+
+<div class="login-box">
+  <div class="login-logo">
+  </div>
+  <!-- /.login-logo -->
+  <div class="card justify-content-center" style="width:400px">
+    <div class="card-body login-card-body justify-content-center">
+      <p class="login-box-msg"></p>
+      <div> <!-- class="input-group-text" -->
+        <span class="fas fa-envelope" style="margin-bottom:20px;"></span>
+      </div>
+        <div class="input-group mb-3" style="place-content: center">
+          <div id="message"></div>
+          <!--<input type="email" name="email" class="form-control" placeholder="아이디를 입력하세요" required>-->
+<!--          <div class="input-group-append">-->
+
+<!--          </div>-->
+          <br>
+          <div>
+            <div>등록된 이메일로 인증 메일을 발송하였습니다.</div>
+            <div>이메일을 확인해 주세요.</div>
+
+          <form action="email-checkAuthCode" method="post">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" name="number" id="number"  placeholder="인증번호 4자리를 입력하세요" minlength="4" maxlength="4" required
+                     onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" style="margin: 30px 0px 20px;">
+              <input type="hidden" th:value="${ #ctx.param.empId }" name="empId" id="empId">
+              <div class="input-group-append" style="margin: 30px 0px 20px;">
+                <div class="input-group-text">
+                  <span class="fas fa-user"></span>
+                </div>
+              </div>
+            </div>
+            <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 98% !important;"/>
+
+        </div>
+      </div>
+
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">인증번호 확인</button>
+            <button type="button" class="btn btn-light btn-block" id="cancel-btn">닫기</button><br>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+      <p class="mt-3 mb-1">
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+  $(function() {
+
+<!--      if (location.pathname === '/account/email-check' && !location.search) {-->
+<!--          alert('잘못된 접근입니다1111');-->
+<!--          window.location.href = "/home";-->
+<!--      }-->
+
+      // 해당 페이지로 뒤로가기로 오는 움직임 막기
+      window.addEventListener('pageshow', (event) => {
+          if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+              alert('잘못된 접근입니다');
+              window.location.href = "/home";
+          }
+      });
+
+      $('#number').focus() ;
+
+      $('#submit-btn').on('click', (e) => {
+
+          e.preventDefault();
+          e.stopPropagation();
+          const userKey = $('#number').val();
+          const id = $('#empId').val();
+          if(userKey.length == 0) {
+              alert('인증번호를 입력해 주세요');
+              return;
+          }
+
+          new Promise((resolve, reject) => {
+                $.ajax({
+                    url : 'email-checkAuthCode',
+                    data : { number : userKey, empId : id},
+                    dataType : "text",
+                    success : function(result){
+                        resolve(result);
+                    },
+                    error : function(xhr, status, err) {
+                        reject(err);
+                    }
+                });
+          })
+            .then(result => {
+                if(result === 'true') {
+                    alert('이메일 인증이 완료되었습니다. 비밀번호 재 설정 페이지로 이동합니다.');
+                    location.href = 'reset-password?empId=' + id;
+               } else if(result === 'length-fail') {
+                    alert('인증번호 4자리를 정확히 입력해 주세요');
+                    $('#number').focus() ;
+               } else if(result === 'false') {
+                    alert('유효하지 않은 인증번호입니다. 다시 입력해 주세요.');
+                    $('#number').val('');
+                    $('#number').focus() ;
+               } else { <!-- empId == null인 경우 url 확인하려고 임시로 -->
+                    alert('인증번호 확인 중 오류가 발생했습니다. 다시 시도해 주세요.');
+                    location.href='user-check';
+               }
+            })
+            .catch(err => {
+                alert("에러 구역");
+            });
+      });
+
+      $('#cancel-btn').on('click', () => {
+            if(confirm('비밀번호 재설정을 취소하시겠습니까?')){
+                history.back();
+            }
+      });
+
+
+  });
+
+
+</script>
+
+
+</body>
+</html>

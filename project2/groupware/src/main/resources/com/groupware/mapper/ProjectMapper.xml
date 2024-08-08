@@ -1,0 +1,890 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.ProjectMapper">
+
+    <!-- 프로젝트 추가 -->
+    <insert id="insertProject" parameterType="ProjectDto">
+        INSERT INTO
+            project (
+                schedule_title,
+                schedule_content,
+                schedule_startdate,
+                schedule_enddate,
+                importance,
+                schedule_status,
+                schedule_pm
+            )
+        VALUES
+            (
+                #{scheduleTitle},
+                #{scheduleContent},
+                #{scheduleStartDate},
+                #{scheduleEndDate},
+                #{importance},
+                #{scheduleStatus},
+                #{schedulePm}
+            )
+    </insert>
+
+    <!-- 마지막 프로젝트 조회 -->
+    <select id="selectLastProject" resultType="ProjectDto">
+        SELECT
+            schedule_no as scheduleNo,
+            schedule_title as scheduleTitle,
+            schedule_content as scheduleContent,
+            schedule_writedate as scheduleWriteDate,
+            schedule_startdate as scheduleStartDate,
+            schedule_enddate as scheduleEndDate,
+            schedule_active as scheduleActive,
+            importance,
+            schedule_status as scheduleStatus,
+            schedule_pm as schedulePm
+        FROM
+            project
+        ORDER BY
+            schedule_no DESC
+        LIMIT
+            1
+    </select>
+
+    <!-- 협업 부서 추가 -->
+    <insert id="insertProjectDept" parameterType="hashmap">
+        INSERT INTO
+            project_dept (schedule_no, dept_no)
+        VALUES
+            (#{scheduleNo}, #{deptNo})
+    </insert>
+
+    <!-- 참여 인원 추가 -->
+    <insert id="insertProjectPeople" parameterType="hashmap">
+        INSERT INTO
+            project_people (schedule_no, emp_id)
+        VALUES
+            (#{scheduleNo}, #{empId})
+    </insert>
+
+    <select id="selectProjectByDept" parameterType="hashmap" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        LEFT JOIN
+            department dp
+        ON
+            pd.dept_no = dp.dept_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_status = #{ projectStatus } AND
+            p.schedule_active = true
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <select id="selectDeptsByScheduleNo" parameterType="int" resultType="DepartmentDto">
+        SELECT
+            dp.dept_no as deptNo,
+            dp.dept_name as deptName
+        FROM
+            department dp
+        LEFT JOIN
+            project_dept pd
+        ON
+            dp.dept_no = pd.dept_no
+        LEFT JOIN
+            project p
+        ON
+            p.schedule_no = pd.schedule_no
+        WHERE
+            p.schedule_no = #{ scheduleNo }
+    </select>
+
+    <select id="selectEmployeesByScheduleNo" parameterType="int" resultType="EmployeeDto">
+        SELECT
+            e.emp_id as empId,
+            e.emp_passwd as empPasswd,
+            e.emp_active as empActive,
+            e.emp_regidate as empRegidate,
+            e.emp_name as empName,
+            e.emp_email as empEmail,
+            e.dept_no as deptNo
+        FROM
+            employee e
+        LEFT JOIN
+            project_people pp
+        ON
+            e.emp_id = pp.emp_id
+        LEFT JOIN
+            project p
+        ON
+            pp.schedule_no = p.schedule_no
+        WHERE
+            p.schedule_no = #{ scheduleNo } AND e.emp_active = 1
+    </select>
+
+    <!-- 중요도로 정렬 -->
+    <select id="selectProjectByImportance" parameterType="hashmap" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        LEFT JOIN
+            department dp
+        ON
+            pd.dept_no = dp.dept_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_status = #{ projectStatus } AND
+            p.schedule_active = true
+        ORDER BY
+            p.importance DESC
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <!-- 마감일로 정렬 -->
+    <select id="selectProjectByEndDate" parameterType="hashmap" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        LEFT JOIN
+            department dp
+        ON
+            pd.dept_no = dp.dept_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_status = #{ projectStatus } AND
+            p.schedule_active = true
+        ORDER BY
+            p.schedule_enddate ASC
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <!-- 부서 이름 찾기 -->
+    <select id="selectDepartment" parameterType="int" resultType="DepartmentDto">
+        SELECT
+            dept_no deptNo,
+            dept_name deptName
+        FROM
+            department
+        WHERE
+            dept_no = #{ deptNo }
+    </select>
+
+    <!-- 프로젝트명 검색 -->
+    <select id="selectProjectByProjectName" parameterType="hashmap" resultType="ProjectDto">
+        SELECT DISTINCT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        WHERE
+            (p.schedule_title LIKE CONCAT('%', #{searchValue}, '%') OR
+            p.schedule_content LIKE CONCAT('%', #{searchValue}, '%')) AND
+            p.schedule_status = #{ projectStatus } AND
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_active = true
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <select id="selectAllDeptes" resultType="DepartmentDto">
+        SELECT
+            dept_no deptNo,
+            dept_name deptName
+        FROM
+            department
+    </select>
+
+    <select id="selectProjectsByDeptNo" parameterType="int" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        LEFT JOIN
+            department dp
+        ON
+            pd.dept_no = dp.dept_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_status = '진행중' AND
+            p.schedule_active = true
+    </select>
+
+    <!-- 검색한 프로젝트 개수 -->
+    <select id="selectProjectsCountByProjectName" parameterType="String" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project p
+        WHERE
+            (p.schedule_title LIKE CONCAT('%', #{searchValue}, '%') OR
+            p.schedule_content LIKE CONCAT('%', #{searchValue}, '%')) AND
+            p.schedule_status = #{ projectStatus } AND
+            p.schedule_active = true
+    </select>
+
+    <!-- 부서, 프로젝트 상태의 프로젝트 개수 -->
+    <select id="selectProjectsCountByDeptNoANDProjectStatus" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        LEFT JOIN
+            department dp
+        ON
+            pd.dept_no = dp.dept_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_status = #{ projectStatus } AND
+            p.schedule_active = true
+    </select>
+
+    <!-- 검색한 프로젝트 중요도 정렬 -->
+    <select id="selectProjectByProjectNameANDImportance" parameterType="hashmap" resultType="ProjectDto">
+        SELECT DISTINCT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        WHERE
+            (p.schedule_title LIKE CONCAT('%', #{searchValue}, '%') OR
+            p.schedule_content LIKE CONCAT('%', #{searchValue}, '%')) AND
+            p.schedule_status = #{ projectStatus } AND
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_active = true
+        ORDER BY
+            p.importance DESC
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <!-- Project 상태 변경 -->
+    <update id="updateProjectStatus" parameterType="hashmap">
+        UPDATE
+            project
+        SET
+            <choose>
+                <when test="status == '진행중'">
+                    schedule_status = '진행중'
+                </when>
+                <when test="status == '완료'">
+                    schedule_status = '완료'
+                </when>
+                <when test="status == '계획중'">
+                    schedule_status = '계획중'
+                </when>
+            </choose>
+        WHERE
+            schedule_no = #{projectNo}
+    </update>
+
+    <!-- Project 삭제 -->
+    <update id="deleteProject" parameterType="int">
+        UPDATE
+            project
+        SET
+            schedule_active = false
+        WHERE
+            schedule_no = #{projectNo}
+    </update>
+
+    <!-- 검색한 프로젝트 마감일 정렬 -->
+    <select id="selectProjectByProjectNameANDEndDate" parameterType="hashmap" resultType="ProjectDto">
+        SELECT DISTINCT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        WHERE
+            (p.schedule_title LIKE CONCAT('%', #{searchValue}, '%') OR
+            p.schedule_content LIKE CONCAT('%', #{searchValue}, '%')) AND
+            p.schedule_status = #{ projectStatus } AND
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_active = true
+        ORDER BY
+            p.schedule_enddate ASC
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <!-- 선택한 Project 정보 조회 -->
+    <select id="selectProjectByScheduleNo" parameterType="int" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        WHERE
+            p.schedule_no = #{ scheduleNo } AND
+            p.schedule_active = true
+    </select>
+
+    <!-- 프로젝트 수정 -->
+    <update id="updateProject" parameterType="ProjectDto">
+        UPDATE
+            project
+        SET
+            schedule_title = #{ scheduleTitle },
+            schedule_content = #{ scheduleContent },
+            schedule_startdate = #{ scheduleStartDate },
+            schedule_enddate = #{ scheduleEndDate },
+            importance = #{ importance },
+            schedule_status = #{ scheduleStatus },
+            schedule_pm = #{ schedulePm }
+        WHERE
+            schedule_no = #{ scheduleNo }
+    </update>
+
+    <!-- 참여 부서 삭제 -->
+    <delete id="deleteProjectDept" parameterType="int">
+        DELETE FROM
+            project_dept
+        WHERE
+            schedule_no = #{ scheduleNo }
+    </delete>
+
+    <!-- 참여 인원 삭제 -->
+    <delete id="deleteProjectPeople" parameterType="int">
+        DELETE FROM
+            project_people
+        WHERE
+            schedule_no = #{ scheduleNo }
+    </delete>
+
+    <!-- Memo 작성 -->
+    <insert id="insertMemo" parameterType="ProjectBoardDto">
+        INSERT INTO
+            project_board (schedule_no, scheduleboard_content, schedule_categoryno, emp_id)
+        VALUES
+            (#{ scheduleNo }, #{ scheduleBoardContent }, #{ scheduleCategoryNo }, #{ empId })
+    </insert>
+
+    <!-- Memo 수정 -->
+    <update id="updateMemo" parameterType="ProjectBoardDto">
+        UPDATE
+            project_board
+        SET
+            scheduleboard_content = #{ scheduleBoardContent }
+        WHERE
+            scheduleboard_no = #{ scheduleBoardNo } AND schedule_categoryno = #{ scheduleCategoryNo } AND schedule_no = #{ scheduleNo }
+    </update>
+
+    <!-- Memo 삭제 -->
+    <update id="deleteMemo" parameterType="int">
+        DELETE FROM
+            project_board
+        WHERE
+            scheduleboard_no = #{ scheduleBoardNo }
+    </update>
+
+    <!-- Memo 조회 -->
+    <select id="selectBoardsByScheduleNo" parameterType="hashmap" resultType="ProjectBoardDto">
+        SELECT
+            scheduleboard_no scheduleBoardNo,
+            schedule_no scheduleNo,
+            scheduleboard_content scheduleBoardContent,
+            scheduleboard_writedate scheduleBoardWriteDate,
+            scheduleboard_meetingdate scheduleBoardMeetingDate,
+            schedule_categoryno scheduleCategoryNo,
+            scheduleboard_active scheduleBoardActive,
+            emp_id empID
+        FROM
+            project_board
+        WHERE
+            schedule_categoryno = #{ category } AND schedule_no = #{ projectNo }
+        ORDER BY
+            scheduleboard_writedate DESC
+    </select>
+
+    <!-- 해당 메모를 쓴 사용자 찾기 -->
+    <select id="selectEmployeeByEmpId" parameterType="int" resultType="EmployeeDto">
+        SELECT
+            emp_id empId,
+            emp_passwd empPasswd,
+            emp_active empActive,
+            emp_regidate empRegidate,
+            emp_name empName,
+            emp_email empEmail,
+            dept_no deptNo
+        FROM
+            employee
+        WHERE
+            emp_id = #{ empId }
+    </select>
+
+    <!-- 회의글 쓰기 -->
+    <insert id="insertMeeting" parameterType="ProjectBoardDto">
+        INSERT INTO
+            project_board
+            (
+                schedule_no,
+                scheduleboard_content,
+                scheduleboard_meetingdate,
+                schedule_categoryno,
+                emp_id
+            )
+        VALUES
+            (
+                #{ scheduleNo },
+                #{ scheduleBoardContent },
+                #{ scheduleBoardMeetingDate },
+                #{ scheduleCategoryNo },
+                #{ empId }
+            )
+    </insert>
+
+    <!-- 회의글 조회 -->
+    <select id="selectMeetingsByScheduleNo" parameterType="hashmap" resultType="ProjectBoardDto">
+        SELECT
+            scheduleboard_no scheduleBoardNo,
+            schedule_no scheduleNo,
+            scheduleboard_content scheduleBoardContent,
+            scheduleboard_writedate scheduleBoardWriteDate,
+            scheduleboard_meetingdate scheduleBoardMeetingDate,
+            schedule_categoryno scheduleCategoryNo,
+            scheduleboard_active scheduleBoardActive,
+            emp_id empId
+        FROM
+            project_board
+        WHERE
+            schedule_categoryno = #{ category } AND
+            schedule_no = #{ projectNo }
+        ORDER BY
+            scheduleboard_meetingdate DESC
+        LIMIT
+            0, ${ listCount }
+    </select>
+
+    <!-- 회의글 삭제(active 0) -->
+    <update id="updateMeetingActive" parameterType="int">
+        UPDATE
+            project_board
+        SET
+            scheduleboard_active = false
+        WHERE
+            scheduleboard_no = #{ scheduleBoardNo }
+    </update>
+
+    <!-- 회의글 복구(active 1) -->
+    <update id="updateMeetingActiveTrue" parameterType="int">
+        UPDATE
+            project_board
+        SET
+            scheduleboard_active = true
+        WHERE
+            scheduleboard_no = #{ scheduleBoardNo }
+    </update>
+
+    <!-- 개인 진행도 사원 있는지 조회 -->
+    <select id="selectEmployeeByEmpIdANDScheduleNo" parameterType="hashmap" resultType="EmployeeDto">
+        SELECT
+            e.emp_id empId,
+            e.emp_passwd empPasswd,
+            e.emp_active empActive,
+            e.emp_regidate empRegidate,
+            e.emp_name empName,
+            e.emp_email empEmail,
+            e.dept_no deptNo
+        FROM
+            employee e
+        LEFT JOIN
+            project_user_schedule pus
+        ON
+            e.emp_id = pus.emp_id
+        WHERE
+            e.emp_id = #{ empId } AND pus.schedule_no = #{ scheduleNo }
+    </select>
+
+    <!-- 협업 부서 찾기 -->
+    <select id="selectProjectDept" parameterType="hashmap" resultType="DepartmentDto">
+        SELECT
+            dept_no deptNo
+        FROM
+            project_dept
+        WHERE
+            dept_no = #{ deptNo } AND schedule_no = #{ scheduleNo }
+    </select>
+
+    <!-- 협업 부서 추가 -->
+    <insert id="insertDept" parameterType="hashmap">
+        INSERT INTO
+            project_dept (schedule_no, dept_no)
+        VALUES
+            (#{ scheduleNo }, #{ deptNo })
+    </insert>
+
+    <!-- 개인 진행도 사원 추가 (project_people) -->
+    <insert id="insertEmployee" parameterType="hashmap">
+        INSERT INTO
+            project_people (emp_id, schedule_no)
+        VALUES
+            (#{ empId }, #{ scheduleNo })
+    </insert>
+
+    <!-- 개인 진행도 사원 삭제 (project_people) -->
+    <delete id="deleteEmployee" parameterType="hashmap">
+        DELETE FROM
+            project_people
+        WHERE
+            schedule_no = #{ projectNo } AND emp_id = #{ empId }
+    </delete>
+
+    <!-- 개인 진행도 사원 삭제 (project_user_schedule) -->
+    <delete id="deleteUserScheduleEmployee" parameterType="hashmap">
+        DELETE FROM
+            project_user_schedule
+        WHERE
+            schedule_no = #{ projectNo } AND emp_id = #{ empId }
+    </delete>
+
+    <!-- Todo 작성 -->
+    <insert id="insertTodo" parameterType="ProjectUserScheduleDto">
+        INSERT INTO
+            project_user_schedule
+                (
+                    emp_id, schedule_no,
+                    userschedule_content,
+                    userschedule_startdate,
+                    userschedule_enddate
+                )
+        VALUES
+            (
+                #{ empId },
+                #{ scheduleNo },
+                #{ userScheduleContent },
+                #{ userScheduleStartDate },
+                #{ userScheduleEndDate }
+            );
+    </insert>
+
+    <!-- Todo 조회 -->
+    <select id="selectProjectUserSchedules" parameterType="hashmap" resultType="ProjectUserScheduleDto">
+        SELECT
+            userschedule_no userScheduleNo,
+            emp_id empId,
+            schedule_no scheduleNo,
+            userschedule_content userScheduleContent,
+            userschedule_writedate userScheduleWriteDate,
+            userschedule_startdate userScheduleStartDate,
+            userschedule_enddate userScheduleEndDate,
+            userschedule_active userScheduleActive
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId } AND schedule_no = #{ projectNo }
+        ORDER BY
+            userschedule_startdate ASC;
+    </select>
+    <select id="selectProjectUserSchedules2" parameterType="hashmap" resultType="ProjectUserScheduleDto">
+        SELECT
+            userschedule_no userScheduleNo,
+            emp_id empId,
+            schedule_no scheduleNo,
+            userschedule_content userScheduleContent,
+            userschedule_writedate userScheduleWriteDate,
+            userschedule_startdate userScheduleStartDate,
+            userschedule_enddate userScheduleEndDate,
+            userschedule_active userScheduleActive,
+            userschedule_status userScheduleStatus
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId } AND schedule_no = #{ projectNo }
+        ORDER BY
+            userschedule_startdate ASC
+        LIMIT #{ pageNo }, 5
+    </select>
+    <!-- 관련 project 찾기 -->
+    <select id="selectProject" parameterType="int" resultType="ProjectDto">
+        SELECT
+            schedule_no as scheduleNo,
+            schedule_title as scheduleTitle,
+            schedule_content as scheduleContent,
+            schedule_writedate as scheduleWriteDate,
+            schedule_startdate as scheduleStartDate,
+            schedule_enddate as scheduleEndDate,
+            schedule_active as scheduleActive,
+            importance,
+            schedule_status as scheduleStatus,
+            schedule_pm as schedulePm
+        FROM
+            project
+        WHERE
+            schedule_no = #{ scheduleNo }
+    </select>
+
+    <!-- Todo 수정 -->
+    <update id="updateTodo" parameterType="ProjectUserScheduleDto">
+        UPDATE
+            project_user_schedule
+        SET
+            userschedule_content = #{ userScheduleContent },
+            userschedule_startdate = #{ userScheduleStartDate },
+            userschedule_enddate = #{ userScheduleEndDate }
+        WHERE
+            schedule_no = #{ scheduleNo } AND userschedule_no = #{ userScheduleNo }
+    </update>
+
+    <!-- Status 수정 -->
+    <update id="updateStatus" parameterType="ProjectUserScheduleDto">
+        UPDATE
+            project_user_schedule
+        SET
+            userschedule_status = #{ userScheduleStatus }
+        WHERE
+            schedule_no = #{ scheduleNo } AND userschedule_no = #{ userScheduleNo }
+    </update>
+
+    <!-- Todo 삭제 -->
+    <delete id="deleteTodo" parameterType="int">
+        DELETE FROM
+            project_user_schedule
+        WHERE
+            userschedule_no = #{ userScheduleNo }
+    </delete>
+
+    <!-- Todo 총 개수 -->
+    <select id="selectTodoAll" parameterType="int" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId } AND schedule_no = #{ projectNo }
+    </select>
+
+    <!-- Todo 완료 상태 총 개수 -->
+    <select id="selectCompleteStatus" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId } AND schedule_no = #{ projectNo } AND userschedule_status = '완료'
+    </select>
+
+    <!-- Todo 총 개수 -->
+    <select id="selectTodoCountByEmpId" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId } AND schedule_no = #{ projectNo }
+    </select>
+
+    <!-- 부서별 Todo 완료 개수 -->
+    <select id="selectDeptComplete" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project_user_schedule pus
+        WHERE
+            pus.schedule_no = #{ projectNo }
+        AND
+            pus.userschedule_status = '완료'
+        AND
+            pus.emp_id IN (
+                SELECT
+                    e.emp_id
+                FROM
+                    employee e
+                LEFT JOIN
+                    project_dept pd
+                ON
+                    e.dept_no = pd.dept_no
+                WHERE
+                    pd.dept_no = #{ deptNo }
+            );
+    </select>
+
+    <!-- 부서별 Todo 총 개수 -->
+    <select id="selectDeptTodoCount" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            project_user_schedule pus
+        WHERE
+            pus.schedule_no = #{ projectNo }
+        AND
+            pus.emp_id IN (
+                SELECT
+                    e.emp_id
+                FROM
+                    employee e
+                LEFT JOIN
+                    project_dept pd
+                ON
+                    e.dept_no = pd.dept_no
+                WHERE
+                    pd.dept_no = #{ deptNo }
+            );
+    </select>
+
+    <!-- 모든 Project 조회 (삭제된 프로젝트 제외) -->
+    <select id="selectAllProjects" resultType="ProjectDto">
+        SELECT
+            schedule_no as scheduleNo,
+            schedule_title as scheduleTitle,
+            schedule_content as scheduleContent,
+            schedule_writedate as scheduleWriteDate,
+            schedule_startdate as scheduleStartDate,
+            schedule_enddate as scheduleEndDate,
+            schedule_active as scheduleActive,
+            importance,
+            schedule_status as scheduleStatus,
+            schedule_pm as schedulePm
+        FROM
+            project
+        WHERE
+            schedule_active = true
+    </select>
+
+    <!-- 해당 부서의 모든 프로젝트 조회 -->
+    <select id="selectAppProjectsByDeptNo" parameterType="int" resultType="ProjectDto">
+        SELECT
+            p.schedule_no as scheduleNo,
+            p.schedule_title as scheduleTitle,
+            p.schedule_content as scheduleContent,
+            p.schedule_writedate as scheduleWriteDate,
+            p.schedule_startdate as scheduleStartDate,
+            p.schedule_enddate as scheduleEndDate,
+            p.schedule_active as scheduleActive,
+            p.importance,
+            p.schedule_status as scheduleStatus,
+            p.schedule_pm as schedulePm
+        FROM
+            project p
+        LEFT JOIN
+            project_dept pd
+        ON
+            p.schedule_no = pd.schedule_no
+        WHERE
+            pd.dept_no = #{ deptNo } AND
+            p.schedule_active = true
+    </select>
+
+    <!-- Project 관련 개인 Todo 조회 -->
+    <select id="selectProjectUserSchedulesByEmpId" parameterType="int" resultType="ProjectUserScheduleDto">
+        SELECT
+            userschedule_no userScheduleNo,
+            emp_id empId,
+            schedule_no scheduleNo,
+            userschedule_content userScheduleContent,
+            userschedule_writedate userScheduleWriteDate,
+            userschedule_startdate userScheduleStartDate,
+            userschedule_enddate userScheduleEndDate,
+            userschedule_active userScheduleActive,
+            userschedule_status userScheduleStatus
+        FROM
+            project_user_schedule
+        WHERE
+            emp_id = #{ empId }
+    </select>
+
+</mapper>

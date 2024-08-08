@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.BoardMapper">
+
+    <resultMap id="BoardResultMap" type="BoardDto">
+        <id property="boardNo" column="boardNo"/>
+        <result property="boardTitle" column="boardTitle"/>
+        <result property="boardContent" column="boardContent"/>
+        <result property="boardWriteDate" column="boardWriteDate"/>
+        <result property="boardActive" column="boardActive"/>
+        <result property="empId" column="empId"/>
+        <result property="boardCount" column="boardCount"/>
+        <result property="empPosition" column="empPosition"/>
+        <result property="empName" column="empName"/>
+        <result property="recipient" column="recipient"/>
+
+        <collection property="attachments" ofType="BoardAttachDto">
+            <result property="boardAttachNo" column="boardAttachNo"/>
+            <result property="boardUserFileName" column="boardUserFileName"/>
+            <result property="boardSavedFileName" column="boardSavedFileName"/>
+        </collection>
+    </resultMap>
+    <!--  insert start  -->
+    <insert id="insertBoard" parameterType="map" useGeneratedKeys="true" keyProperty="boardNo">
+        INSERT INTO groupware_team2.board
+            (board_title, board_content, emp_id)
+        VALUES (#{boardTitle}, #{boardContent}, #{empId});
+    </insert>
+    <insert id="insertBoardAttach" parameterType="BoardAttachDto" useGeneratedKeys="true" keyProperty="boardAttachNo">
+        INSERT INTO groupware_team2.board_attach
+            (board_userfilename, board_savedfilename, board_no)
+        VALUES (#{ boardUserFileName },  #{ boardSavedFileName }, #{ boardNo });
+    </insert>
+    <!--  insert end  -->
+
+
+    <!--  select start  -->
+    <select id="countBoards" resultType="int">
+        SELECT COUNT(*)
+        FROM board b
+        WHERE
+        <if test="searchText != null">
+            (
+                b.board_title LIKE CONCAT('%', #{searchText}, '%')
+            OR  b.board_content LIKE CONCAT('%', #{searchText}, '%')
+            )
+            AND
+            b.board_active = 1
+        </if>
+        <if test="searchText == null">
+            b.board_active = 1
+        </if>
+    </select>
+
+    <select id="selectBoardByRange" parameterType="map" resultMap="BoardResultMap">
+    SELECT
+        b.board_no AS boardNo,
+        b.board_title AS boardTitle,
+        b.board_content AS boardContent,
+        b.board_writedate AS boardWriteDate,
+        b.board_active AS boardActive,
+        b.emp_id AS empId,
+        b.board_count AS boardCount,
+        ba.board_attachno AS boardAttachNo,
+        p.position_name AS empPosition,
+        ep.emp_name AS empName
+    FROM board b
+    LEFT JOIN
+        board_attach ba
+    ON
+        b.board_no = ba.board_no
+    LEFT JOIN
+        employee ep
+    ON
+        b.emp_id = ep.emp_id
+    LEFT JOIN
+        position p
+    ON
+        ep.position_no = p.position_no
+    WHERE
+        <if test="searchText != null">
+            (
+                b.board_title LIKE CONCAT('%', #{searchText}, '%')
+            OR  b.board_content LIKE CONCAT('%', #{searchText}, '%')
+            )
+            AND
+                b.board_active = 1
+        </if>
+        <if test="searchText == null">
+            b.board_active = 1
+        </if>
+    ORDER BY b.board_no DESC
+    LIMIT #{from}, #{count}
+    </select>
+    <select id="selectBoardByBoardNo" parameterType="map" resultMap="BoardResultMap">
+        SELECT
+            b.board_no AS boardNo,
+            b.board_title AS boardTitle,
+            b.board_content AS boardContent,
+            b.board_writedate AS boardWriteDate,
+            b.board_active AS boardActive,
+            b.emp_id AS empId,
+            b.board_count AS boardCount,
+            ba.board_attachno AS boardAttachNo,
+            ba.board_userfilename AS boardUserFileName,
+            ba.board_savedfilename AS boardSavedFileName,
+            p.position_name AS empPosition,
+            ep.emp_name AS empName
+        FROM
+            board b
+        LEFT OUTER JOIN
+            board_attach ba
+        ON
+            b.board_no = ba.board_no
+        LEFT JOIN
+            employee ep
+        ON
+            b.emp_id = ep.emp_id
+        LEFT JOIN
+            position p
+        ON
+            ep.position_no = p.position_no
+        WHERE
+                b.board_no = #{boardNo}
+            AND
+                b.board_active = 1
+
+    </select>
+    <select id="selectPositionNameByPositionNo" parameterType="map" resultType="PositionDto">
+        SELECT
+            position_name AS positionName,
+            position_no AS positionNo
+        FROM
+            groupware_team2.position
+        WHERE
+            position_no = #{ positionNo }
+    </select>
+    <select id="selectAllEmail" parameterType="map" resultType="String">
+        SELECT
+            emp_email AS empEmail
+        FROM
+            groupware_team2.employee
+        WHERE
+            emp_id != #{empId}
+    </select>
+
+    <select id="selectBoardAttachByAttachNo" parameterType="int" resultType="BoardAttachDto">
+        SELECT
+            board_attachno AS boardAttachNo,
+            board_userfilename AS boardUserFileName,
+            board_savedfilename AS boardSavedFileName,
+            board_no AS boardNo
+        FROM
+            groupware_team2.board_attach
+        WHERE
+            board_attachno = #{ attachNo }
+    </select>
+    <!--  select start  -->
+
+    <!--  update start  -->
+    <update id="updateBoardCountByBoardNo" parameterType="map">
+        UPDATE
+            groupware_team2.board
+        SET
+            board_count = board_count + 1
+        WHERE
+            board_no = #{boardNo}
+    </update>
+    <update id="updateBoardContentByBoardNo" parameterType="boardDto">
+        UPDATE
+            groupware_team2.board
+        SET
+            board_title = #{boardTitle},
+            board_content = #{boardContent},
+            board_modifiydate = now()
+        WHERE
+            board_no = #{boardNo}
+    </update>
+    <update id="updateBoardActiveByBoardNo" parameterType="map">
+        UPDATE
+            groupware_team2.board
+        SET
+            board_active = 0
+        WHERE
+            board_no = #{boardNo}
+    </update>
+    <!--  update end  -->
+
+</mapper>

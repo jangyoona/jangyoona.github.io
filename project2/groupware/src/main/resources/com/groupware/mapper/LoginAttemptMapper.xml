@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.LoginAttemptMapper">
+
+    <insert id="insertLoginAttempt" parameterType="LoginAttemptDto">
+        INSERT INTO
+                    login_attempts (
+                                    diff,
+                                    user_name,
+                                    timestamp,
+                                    ip_address,
+                                    success
+                    )
+        VALUES (
+                #{ diff },
+                #{ userName },
+                #{ timestamp },
+                #{ ipAddress },
+                #{ success }
+        );
+    </insert>
+
+    <select id="findLoginAttemptsCountById" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            login_attempts
+        <where>
+            <if test="keyword.equals('all')">
+                user_name = #{empId}
+                AND timestamp BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+            </if>
+            <if test="keyword.equals('login') or keyword.equals('logout')">
+                user_name = #{empId}
+                AND timestamp BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                AND diff = #{keyword}
+            </if>
+        </where>
+    </select>
+
+</mapper>

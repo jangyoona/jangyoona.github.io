@@ -1,0 +1,342 @@
+<style>
+    .pushable {
+        position: relative;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        outline-offset: 4px;
+        transition: filter 250ms;
+    }
+    .shadow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 25px;
+        background: hsl(0deg 0% 0% / 0.25);
+        will-change: transform;
+        transform: translateY(2px);
+        transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+    }
+    .edge {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        background: linear-gradient(
+            to left,
+            hsl(220deg 100% 16%) 0%,
+            hsl(220deg 100% 32%) 8%,
+            hsl(220deg 100% 32%) 92%,
+            hsl(220deg 100% 16%) 100%
+        );
+    }
+    .front {
+        display: block;
+        position: relative;
+        padding: 20px 100px;
+        border-radius: 12px;
+        font-size: 2rem;
+        color: white;
+        background: hsl(220deg 100% 50%);
+        will-change: transform;
+        transform: translateY(-4px);
+        transition: transform 600ms cubic-bezier(.3, .7, .4, 1);
+    }
+    .pushable:hover {
+        filter: brightness(110%);
+    }
+    .pushable:hover .front {
+        transform: translateY(-6px);
+        transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5);
+    }
+    .pushable:active .front {
+        transform: translateY(-2px);
+        transition: transform 34ms;
+    }
+    .pushable:hover .shadow {
+        transform: translateY(4px);
+        transition: transform 250ms cubic-bezier(.3, .7, .4, 1.5);
+    }
+    .pushable:active .shadow {
+        transform: translateY(1px);
+        transition: transform 34ms;
+    }
+    .pushable:focus:not(:focus-visible) {
+        outline: none;
+    }
+    #game-container {
+        display: flex;
+    }
+    #snake-game {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 60vh;
+        background-color: #f0f0f0;
+        margin-right: 20px;
+    }
+    #score {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+    canvas {
+        border: 1px solid black;
+    }
+    #game-over {
+        margin-top: 20px;
+    }
+    #ranking-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        height: 60vh;
+        background-color: #f9f9f9;
+        flex: 1;
+        width: 120%;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    table, th, td {
+        border: 1px solid black;
+    }
+    th, td {
+        padding: 8px;
+        text-align: center;
+    }
+    .modal-dialog {
+        max-width: 40%;
+    }
+</style>
+<input type="hidden" id="empId" th:value="${#ctx.session.loginUser.empId}" />
+
+<button type="button" id="check-in-button" class="pushable" data-toggle="modal" data-target="#modal-default">
+    <span class="edge"></span>
+    <span class="shadow"></span>
+    <span class="front">
+        미니 게임
+    </span>
+</button>
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">ㅋㅋㅋㅋㅋㅋ</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-danger">
+                    <div id="game-container">
+                        <div id="snake-game">
+                            <div id="score">Score: 0</div>
+                            <canvas id="gameCanvas" width="400" height="400"></canvas>
+                            <div id="game-over" style="display: none; text-align: center;">
+                                <h2>Game Over</h2>
+                                <button id="restart-button">다시하기</button>
+                            </div>
+                        </div>
+                        <div id="ranking-area">
+                            <h3>Ranking</h3>
+                            <table id="ranking-table">
+                                <thead>
+                                <tr>
+                                    <th>랭킹</th>
+                                    <th>사원 이름</th>
+                                    <th>점수</th>
+                                    <th>시도 횟수</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="minigame, iterStat : ${allMinigameInfo}" style="height:30px">
+                                    <td th:text="${iterStat.index + 1}">1</td>
+                                    <td th:text="${minigame.empName}">empName</td>
+                                    <td th:text="${minigame.score}">score</td>
+                                    <td th:text="${minigame.attempts}">attempts</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('score');
+            const gameOverElement = document.getElementById('game-over');
+            const restartButton = document.getElementById('restart-button');
+            const empIdElement = document.getElementById('empId');
+
+            const gridSize = 20;
+            const tileCount = canvas.width / gridSize;
+
+            let snake = [{x: 10, y: 10}];
+            let food = {x: 15, y: 15};
+            let dx = 0;
+            let dy = 0;
+            let changingDirection = false;
+            let score = 0;
+
+            document.addEventListener('keydown', changeDirection);
+            restartButton.addEventListener('click', restartGame);
+
+            function main() {
+                if (didGameEnd()) {
+                    gameOver();
+                    return;
+                }
+
+                changingDirection = false;
+                setTimeout(function onTick() {
+                    clearCanvas();
+                    drawFood();
+                    moveSnake();
+                    drawSnake();
+                    main();
+                }, 100);
+            }
+
+            function clearCanvas() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            function drawSnake() {
+                snake.forEach(drawSnakePart);
+            }
+
+            function drawSnakePart(snakePart) {
+                ctx.fillStyle = 'lightgreen';
+                ctx.strokeStyle = 'darkgreen';
+                ctx.fillRect(snakePart.x * gridSize, snakePart.y * gridSize, gridSize, gridSize);
+                ctx.strokeRect(snakePart.x * gridSize, snakePart.y * gridSize, gridSize, gridSize);
+            }
+
+            function moveSnake() {
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    scoreElement.textContent = `Score: ${score}`;
+                    createFood();
+                } else {
+                    snake.pop();
+                }
+            }
+
+            function changeDirection(event) {
+                const LEFT_KEY = 37;
+                const RIGHT_KEY = 39;
+                const UP_KEY = 38;
+                const DOWN_KEY = 40;
+
+                if (changingDirection) return;
+                changingDirection = true;
+
+                const keyPressed = event.keyCode;
+                const goingUp = dy === -1;
+                const goingDown = dy === 1;
+                const goingRight = dx === 1;
+                const goingLeft = dx === -1;
+
+                if (keyPressed === LEFT_KEY && !goingRight) {
+                    dx = -1;
+                    dy = 0;
+                }
+                if (keyPressed === UP_KEY && !goingDown) {
+                    dx = 0;
+                    dy = -1;
+                }
+                if (keyPressed === RIGHT_KEY && !goingLeft) {
+                    dx = 1;
+                    dy = 0;
+                }
+                if (keyPressed === DOWN_KEY && !goingUp) {
+                    dx = 0;
+                    dy = 1;
+                }
+            }
+
+            function createFood() {
+                food.x = Math.floor(Math.random() * tileCount);
+                food.y = Math.floor(Math.random() * tileCount);
+
+                snake.forEach(function isFoodOnSnake(part) {
+                    const foodIsOnSnake = part.x === food.x && part.y === food.y;
+                    if (foodIsOnSnake) createFood();
+                });
+            }
+
+            function drawFood() {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+            }
+
+            function didGameEnd() {
+                for (let i = 4; i < snake.length; i++) {
+                    const hasCollided = snake[i].x === snake[0].x && snake[i].y === snake[0].y;
+                    if (hasCollided) return true;
+                }
+
+                const hitLeftWall = snake[0].x < 0;
+                const hitRightWall = snake[0].x >= tileCount;
+                const hitToptWall = snake[0].y < 0;
+                const hitBottomWall = snake[0].y >= tileCount;
+
+                return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall;
+            }
+
+            function gameOver() {
+                gameOverElement.style.display = 'block';
+                $.ajax({
+                type: 'POST',
+                url: '/insert-or-update-score',
+                data: JSON.stringify({
+                    empId: empIdElement.value,
+                    score: score
+                }),
+                contentType: 'application/json',
+                success: function(response) {
+                    console.log('Data sent successfully');
+                },
+                error: function(error) {
+                    console.log('Error sending data', error);
+                }
+            });
+        }
+
+            function restartGame() {
+                snake = [{x: 10, y: 10}];
+                dx = 0;
+                dy = 0;
+                score = 0;
+                scoreElement.textContent = `Score: ${score}`;
+                gameOverElement.style.display = 'none';
+                main();
+            }
+
+            main();
+        })();
+
+</script>

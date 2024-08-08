@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Organization Chart with D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .node rect {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 3px;
+        }
+
+        .node text {
+            font: 12px sans-serif;
+        }
+
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+<body>
+<div id="chart"></div>
+
+<script>
+    var data = {
+        "name": "Ethan",
+        "title": "CEO",
+        "children": [
+            {
+                "name": "Anson",
+                "title": "CTO",
+                "children": [
+                    { "name": "Kate", "title": "Lead Engineer", "children": [
+                        { "name": "John", "title": "Engineer" },
+                        { "name": "Jackson", "title": "Junior Engineer" },
+                        { "name": "Lucas", "title": "Intern" }
+                    ]}
+                ]
+            },
+            {
+                "name": "Ada",
+                "title": "CFO",
+                "children": [
+                    { "name": "May", "title": "Accountant" }
+                ]
+            },
+            {
+                "name": "Linda",
+                "title": "HR Manager",
+                "children": [
+                    { "name": "Sam", "title": "HR Specialist" },
+                    { "name": "Michael", "title": "HR Assistant" }
+                ]
+            },
+            {
+                "name": "Paul",
+                "title": "Design Manager",
+                "children": [
+                    { "name": "Elizabeth", "title": "Senior Designer", "children": [
+                        { "name": "Caroline", "title": "Assistant Designer" },
+                        { "name": "Henry", "title": "Junior Designer" }
+                    ]}
+                ]
+            }
+        ]
+    };
+
+    var margin = { top: 20, right: 120, bottom: 20, left: 120 },
+        width = 960 - margin.right - margin.left,
+        height = 800 - margin.top - margin.bottom;
+
+    var i = 0,
+        duration = 750,
+        root;
+
+    var tree = d3.tree().size([height, width]);
+
+    var diagonal = d3.linkHorizontal().x(d => d.y).y(d => d.x);
+
+    var svg = d3.select("#chart").append("svg")
+        .attr("width", width + margin.right + margin.left)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    root = d3.hierarchy(data, function(d) { return d.children; });
+    root.x0 = height / 2;
+    root.y0 = 0;
+
+    function collapse(d) {
+        if (d.children) {
+            d._children = d.children;
+            d._children.forEach(collapse);
+            d.children = null;
+        }
+    }
+
+    root.children.forEach(collapse);
+    update(root);
+
+    function update(source) {
+
+        var treeData = tree(root);
+
+        var nodes = treeData.descendants(),
+            links = treeData.descendants().slice(1);
+
+        nodes.forEach(function(d) { d.y = d.depth * 180 });
+
+        var node = svg.selectAll('g.node')
+            .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+        var nodeEnter = node.enter().append('g')
+            .attr('class', 'node')
+            .attr("transform", function(d) {
+                return "translate(" + source.y0 + "," + source.x0 + ")";
+            })
+            .on('click', click);
+
+        nodeEnter.append('rect')
+            .attr('width', 160)
+            .attr('height', 40)
+            .attr('x', -80)
+            .attr('y', -20)
+            .attr('rx', 10)
+            .attr('ry', 10);
+
+        nodeEnter.append('text')
+            .attr("dy", ".35em")
+            .attr("x", 0)
+            .attr("text-anchor", "middle")
+            .text(function(d) { return d.data.name; })
+            .append("tspan")
+            .attr("dy", "1.35em")
+            .attr("x", 0)
+            .text(function(d) { return d.data.title; });
+
+        var nodeUpdate = nodeEnter.merge(node);
+
+        nodeUpdate.transition()
+            .duration(duration)
+            .attr("transform", function(d) {
+                return "translate(" + d.y + "," + d.x + ")";
+            });
+
+        nodeUpdate.select('rect')
+            .attr('width', 160)
+            .attr('height', 40)
+            .attr('x', -80)
+            .attr('y', -20)
+            .attr('rx', 10)
+            .attr('ry', 10);
+
+        nodeUpdate.select('text')
+            .style('fill-opacity', 1);
+
+        var nodeExit = node.exit().transition()
+            .duration(duration)
+            .attr("transform", function(d) {
+                return "translate(" + source.y + "," + source.x + ")";
+            })
+            .remove();
+
+        nodeExit.select('rect')
+            .attr('width', 160)
+            .attr('height', 40)
+            .attr('x', -80)
+            .attr('y', -20);
+
+        nodeExit.select('text')
+            .style('fill-opacity', 1e-6);
+
+        var link = svg.selectAll('path.link')
+            .data(links, function(d) { return d.id; });
+
+        var linkEnter = link.enter().insert('path', "g")
+            .attr("class", "link")
+            .attr('d', function(d){
+                var o = {x: source.x0, y: source.y0}
+                return diagonal({source: o, target: o})
+            });
+
+        var linkUpdate = linkEnter.merge(link);
+
+        linkUpdate.transition()
+            .duration(duration)
+            .attr('d', diagonal);
+
+        var linkExit = link.exit().transition()
+            .duration(duration)
+            .attr('d', function(d) {
+                var o = {x: source.x, y: source.y}
+                return diagonal({source: o, target: o})
+            })
+            .remove();
+
+        nodes.forEach(function(d){
+            d.x0 = d.x;
+            d.y0 = d.y;
+        });
+
+        function click(event, d) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+    }
+</script>
+</body>
+</html>

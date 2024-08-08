@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.CalendarMapper">
+
+    <insert id="insertCalendar" parameterType="CalendarDto">
+
+        INSERT INTO calendar (
+        calendar_title,
+        type,
+        emp_id,
+        dept_no
+        )
+
+        VALUES (
+        #{ calendarTitle },
+        #{ type },
+        #{ empId },
+        #{ deptNo }
+        )
+
+    </insert>
+
+    <insert id="insertCalendarEvent" parameterType="CalendarEventDto">
+        INSERT INTO calendar_event (
+        title,
+        start,
+        end,
+        all_day,
+        background_color,
+        border_color,
+        url,
+        calendar_no,
+        content
+        )
+        VALUES (
+        #{title},
+        #{start},
+        #{end},
+        #{allDay},
+        #{backgroundColor},
+        #{borderColor},
+        #{url},
+        #{calendarNo},
+        #{content}
+        )
+    </insert>
+
+    <insert id="insertCalendarEventDefault" parameterType="CalendarEventDto">
+        INSERT INTO calendar_event (
+        title,
+        start,
+        end,
+        all_day,
+        background_color,
+        border_color,
+        url,
+        calendar_no
+        )
+        VALUES (
+        '대충 더미데이터',
+        CURDATE(),
+        CURDATE(),
+        '1',
+        '#00a65a',
+        '#00a65a',
+        'null',
+        #{calendarNo}
+        )
+    </insert>
+
+    <update id="updateCalendarEvent" parameterType="CalendarEventDto">
+        UPDATE calendar_event
+        SET
+        title = #{title},
+        start = #{start},
+        end = #{end},
+        all_day = #{allDay},
+        content = #{content},
+        background_color = #{backgroundColor},
+        border_color = #{borderColor},
+        url = #{url}
+        WHERE event_id = #{eventId}
+    </update>
+
+    <delete id="deleteAllEventsByCalendarNo" parameterType="int">
+
+        DELETE
+
+        FROM
+        calendar_event
+
+        WHERE
+        calendar_no = #{ calendarNo }
+
+    </delete>
+
+    <delete id="deleteEventsByEventId" parameterType="int">
+
+        DELETE
+
+        FROM
+        calendar_event
+
+        WHERE
+        event_id = #{ eventId }
+
+    </delete>
+
+    <!--개인 캘린더 조회 쿼리-->
+    <select id="findCalendarByEmpId" parameterType="int" resultType="CalendarDto">
+
+        SELECT
+        calendar_no calendarNo,
+        calendar_title calendarTitle,
+        type type,
+        emp_id empId,
+        dept_no deptNo
+
+        FROM
+        calendar
+
+        WHERE
+        emp_id = #{ empId } AND
+        type = 'personal'
+
+    </select>
+    <!--부서 캘린더 조회 쿼리-->
+    <select id="findCalendarByDeptNo" parameterType="int" resultType="CalendarDto">
+
+        SELECT
+        calendar_no calendarNo,
+        calendar_title calendarTitle,
+        type type,
+        emp_id empId,
+        dept_no deptNo
+
+        FROM
+        calendar
+
+        WHERE
+        dept_no = #{ deptNo } AND
+        type = 'department'
+
+    </select>
+
+    <!--캘린더 이벤트 조회 쿼리-->
+    <select id="findCalendarEventsByCalendarNo" parameterType="int" resultType="CalendarEventDto">
+
+        SELECT
+        event_id eventId,
+        event_id id,
+        title title,
+        start start,
+        end end,
+        all_day allDay,
+        background_color backgroundColor,
+        border_color borderColor,
+        url url,
+        calendar_no calendarNo,
+        content content
+
+        FROM
+        calendar_event
+
+        WHERE
+        calendar_no = #{calendarNo}
+
+    </select>
+
+
+</mapper>

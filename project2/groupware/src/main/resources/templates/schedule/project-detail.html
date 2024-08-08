@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>프로젝트 관리</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Bootstrap Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/dist/project-list/detail.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" style="background-color: white">
+        <div class="main-container">
+            <a href="list" class="back-btn">
+                <i class="fas fa-list"></i>
+            </a>
+            <div class="header-container">
+                <h3 th:text="${project.scheduleTitle}"></h3>
+                <h6>
+                    <span th:text='|${ #dates.format(project.scheduleStartDate, "yyyy-MM-dd") } ~ |'></span>
+                    <span th:text='${ #dates.format(project.scheduleEndDate, "yyyy-MM-dd") }'></span>
+                </h6>
+            </div>
+            <div class="meeting-container">
+
+                <div class="timeline-container">
+                    <div class="timeline-content">
+                        <section class="content">
+                            <div class="container-fluid">
+                                <!-- Timelime example  -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <!-- The time line -->
+                                        <div class="timeline" id="timeline">
+                                            <!-- timeline time label -->
+                                            <div>
+                                                <i class="fas fa-clock bg-gray"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.col -->
+                                </div>
+                            </div>
+                            <!-- /.timeline -->
+                        </section>
+                    </div>
+                    <form id="memoForm" method="POST" action="write-memo">
+                        <input type="hidden" name="scheduleNo" th:value='${ project.scheduleNo }' />
+                        <input type="hidden" name="empId" th:if="${ #ctx.session.loginUser != null }" th:value='${ #ctx.session.loginUser.empId }' />
+                        <input type="hidden" name="scheduleCategoryNo" value='1' />
+                        <div th:each="employee : ${project.employees}" th:if="${employee.empId == #ctx.session.loginUser.empId}" class="timeline-write">
+                            <button type="button" class="refresh-btn"><i class="fas fa-sync-alt"></i></button>
+                            <div class="form-group">
+                                <label for="scheduleBoardContent">글쓰기</label>
+                                <textarea id="scheduleBoardContent" class="form-control" name="scheduleBoardContent" rows="4" style="resize: none;"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="memo-write-btn">작성하기</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-container">
+                </div>
+            </div>
+
+            <div class="todo-container">
+                <div class="private-container">
+                    <div style="display: flex; flex-direction: row; column-gap: 1rem;">
+                        <h4>개인 진행도</h4>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-sm">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <div class="modal fade" id="modal-sm">
+                            <div class="modal-dialog modal-sm">
+                                <div class="modal-content">
+                                    <form id="addEmpForm" action="add-emp" method="POST">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">추가할 사원 아이디를 입력해주세요</h4>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <input type="hidden" name="scheduleNo" th:value="${project.scheduleNo}">
+                                            <input type="text" name="empId">
+                                        </div>
+                                        <div class="modal-footer justify-content-between">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                                            <button type="button" class="btn btn-primary add-emp-button">추가하기</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!-- /.modal-content -->
+                            </div>
+                            <!-- /.modal-dialog -->
+                        </div>
+                    </div>
+                    <div th:each="dept : ${project.depts}" class="card collapsed-card">
+                        <div class="card-header">
+                            <h3 class="card-title" th:text="${dept.deptName}"></h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+<!--                                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">-->
+<!--                                    <i class="fas fa-times"></i>-->
+<!--                                </button>-->
+                            </div>
+                        </div>
+                        <div class="card-body p-0" style="display: none;">
+                            <table class="table table-striped projects">
+                                <thead>
+                                <tr>
+                                    <th style="width: 20%">
+                                        이름
+                                    </th>
+                                    <th>
+                                        진행도
+                                    </th>
+                                    <th style="width: 8%" class="text-center">
+                                        상태
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="employee : ${project.employees}" th:if="${dept.deptNo == employee.deptNo}">
+                                    <td>
+                                        <a th:text="${employee.empName}"></a>
+                                        <br/>
+                                        <small th:text="${employee.empEmail}"></small>
+                                    </td>
+                                    <td class="project_progress">
+                                        <div class="progress progress-sm">
+                                            <div class="progress-bar bg-blue" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" th:style="|width: ${employee.percent}%|">
+                                            </div>
+                                        </div>
+                                        <small th:text="|${employee.percent}% Complete|"></small>
+                                    </td>
+                                    <td class="project-state" th:if="${employee.percent == 100}">
+                                        <span class="badge badge-success">완료</span>
+                                    </td>
+                                    <td class="project-state" th:if="${employee.percent != 100}">
+                                        <span class="badge badge-warning">진행</span>
+                                    </td>
+                                    <td class="project-actions text-right">
+                                        <a class="btn btn-info btn-sm" th:href="|todo?projectNo=${project.scheduleNo}&empId=${employee.empId}|"><i class="fas fa-pencil-alt"></i>
+                                            Todo
+                                        </a>
+                                        <a class="btn btn-danger btn-sm todo-delete-button" href="#"
+                                                th:data-empname="${employee.empName}"
+                                                th:data-empid="${employee.empId}"
+                                                th:data-projectno="${project.scheduleNo}"><i class="fas fa-trash"></i>
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-progress-container">
+                    <h4>팀 진행도</h4>
+                    <div th:each="dept : ${project.depts}" class="project_progress">
+                        <div th:text="${dept.deptName}"></div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-blue" role="progressbar" aria-valuenow="57" aria-valuemin="0" aria-valuemax="100" th:style="|width: ${dept.percent}%|">
+                            </div>
+                        </div>
+                        <div th:text="|${dept.percent}% Complete|"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script th:inline="javascript">
+    $(function() {
+        const currentPath = '/schedule/list'
+        $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+        // Memo, meeting 글 조회
+        $('#timeline').load('project-memo?category=1&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+        $('.card-container').load('meeting-list?listCount=0&category=2&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+
+        // Memo 글 수정 삭제 버튼 기능 & UI 변경
+        let idx = 0;
+        $('#timeline').on('click', '.edit-button', function(e) {
+
+          idx = $(this).data('idx');
+
+          $('.edit-button').eq(idx).css('display', 'none');
+          $('.delete-button').eq(idx).css('display', 'none');
+          $('.submit-button').eq(idx).css('display', 'block');
+          $('.cancel-button').eq(idx).css('display', 'block');
+
+          $('.timeline-body').eq(idx).css('display', 'none');
+          $('.timeline-textarea').eq(idx).css('display', 'block');
+
+        });
+
+        $('#timeline').on('click', '.cancel-button', function() {
+
+          idx = $(this).data('idx');
+
+          $('.submit-button').eq(idx).css('display', 'none');
+          $('.cancel-button').eq(idx).css('display', 'none');
+          $('.edit-button').eq(idx).css('display', 'block');
+          $('.delete-button').eq(idx).css('display', 'block');
+
+          $('.timeline-textarea').eq(idx).css('display', 'none');
+          $('.timeline-body').eq(idx).css('display', 'block');
+
+        });
+
+        // Memo 수정 기능
+        $('#timeline').on('click', '.submit-button', function() {
+
+            idx = $(this).data('idx');
+            const memoUpdateForm = $('.memoUpdateForm').eq(idx);
+            const data = memoUpdateForm.serializeArray();
+
+            if ($('.timeline-textarea').eq(idx).val() == '') {
+                alert('글을 작성해주세요');
+            } else {
+                $.ajax({
+                    "url": memoUpdateForm.attr('action'),
+                    "method" : memoUpdateForm.attr('method'),
+                    "data" : data,
+                    "dataType" : "text",
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('#timeline').load('project-memo?category=1&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+
+            $('.submit-button').eq(idx).css('display', 'none');
+            $('.cancel-button').eq(idx).css('display', 'none');
+            $('.edit-button').eq(idx).css('display', 'block');
+            $('.delete-button').eq(idx).css('display', 'block');
+
+            $('.timeline-textarea').eq(idx).css('display', 'none');
+            $('.timeline-body').eq(idx).css('display', 'block');
+
+        });
+
+        // Memo 삭제 기능
+        $('#timeline').on('click', '.delete-button', function() {
+            idx = $(this).data('idx');
+            const confirm = window.confirm('이 댓글을 삭제하시겠습니까?');
+            if (confirm) {
+                $.ajax({
+                    "url": 'delete-memo',
+                    "method" : 'POST',
+                    "data" : "scheduleBoardNo=" + $('.memo-no').eq(idx).data('scheduleboardno'),
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('#timeline').load('project-memo?category=1&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+        });
+
+
+        // refresh btn
+        $('.refresh-btn').on('click', function(e) {
+            $('#timeline').load('project-memo?category=1&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+        });
+
+        // Memo 작성 기능
+        $('#memo-write-btn').on('click', (e) => {
+            const memoForm = $('#memoForm');
+            const data = memoForm.serializeArray();
+
+            if ($('#scheduleBoardContent').val() == '') {
+                alert('글을 작성해주세요');
+            } else {
+                $.ajax({
+                    "url": memoForm.attr('action'),
+                    "method" : memoForm.attr('method'),
+                    "data" : data,
+                    "dataType" : "text",
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('#timeline').load('project-memo?category=1&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                            $('#scheduleBoardContent').val('');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+        });
+
+        // ===================================================================================
+
+        // 회의글 쓰기 페이지로 이동 기능
+        $('.card-container').on('click', '.write-meeting-btn', () => {
+            location.href = 'meeting?projectNo=' + /*[[${ project.scheduleNo }]]*/'';
+        });
+
+        // 회의글 More 버튼 기능
+        let count = 0;
+        $('.card-container').on('click', '.more-btn', () => {
+            count = count + 5;
+            $('.card-container').load('meeting-list?listCount=' + count +'&category=2&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+        });
+
+        // Meeting 글 수정 삭제 버튼 기능 & UI 변경
+        let meetingIdx = 0;
+        $('.card-container').on('click', '.meeting-edit-button', function(e) {
+
+          meetingIdx = $(this).data('idx');
+
+          $('.meeting-edit-button').eq(meetingIdx).css('display', 'none');
+          $('.meeting-delete-button').eq(meetingIdx).css('display', 'none');
+          $('.meeting-submit-button').eq(meetingIdx).css('display', 'block');
+          $('.meeting-cancel-button').eq(meetingIdx).css('display', 'block');
+
+          $('.body-content').eq(meetingIdx).css('display', 'none');
+          $('.meeting-timeline-textarea').eq(meetingIdx).css('display', 'block');
+
+        });
+
+        $('.card-container').on('click', '.meeting-cancel-button', function() {
+
+          meetingIdx = $(this).data('idx');
+
+          $('.meeting-submit-button').eq(meetingIdx).css('display', 'none');
+          $('.meeting-cancel-button').eq(meetingIdx).css('display', 'none');
+          $('.meeting-edit-button').eq(meetingIdx).css('display', 'block');
+          $('.meeting-delete-button').eq(meetingIdx).css('display', 'block');
+
+          $('.meeting-timeline-textarea').eq(meetingIdx).css('display', 'none');
+          $('.body-content').eq(meetingIdx).css('display', 'block');
+
+        });
+
+        // Meeting 수정 기능
+        $('.card-container').on('click', '.meeting-submit-button', function() {
+
+            meetingIdx = $(this).data('idx');
+            const meetingUpdateForm = $('.meetingUpdateForm').eq(meetingIdx);
+            const data = meetingUpdateForm.serializeArray();
+
+            if ($('.meeting-timeline-textarea').eq(meetingIdx).val() == '') {
+                alert('글을 작성해주세요');
+            } else {
+                $.ajax({
+                    "url": meetingUpdateForm.attr('action'),
+                    "method" : meetingUpdateForm.attr('method'),
+                    "data" : data,
+                    "dataType" : "text",
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('.card-container').load('meeting-list?listCount=' + count +'&category=2&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+
+            $('.meeting-submit-button').eq(meetingIdx).css('display', 'none');
+            $('.meeting-cancel-button').eq(meetingIdx).css('display', 'none');
+            $('.meeting-edit-button').eq(meetingIdx).css('display', 'block');
+            $('.meeting-delete-button').eq(meetingIdx).css('display', 'block');
+
+            $('.meeting-timeline-textarea').eq(meetingIdx).css('display', 'none');
+            $('.body-content').eq(meetingIdx).css('display', 'block');
+
+        });
+
+        // Meeting 삭제 기능
+        $('.card-container').on('click', '.meeting-delete-button', function() {
+            meetingIdx = $(this).data('idx');
+            const confirm = window.confirm('이 회의글을 삭제하시겠습니까?');
+            if (confirm) {
+                $.ajax({
+                    "url": 'delete-meeting',
+                    "method" : 'POST',
+                    "data" : "scheduleBoardNo=" + $('.meeting-no').eq(meetingIdx).data('scheduleboardno'),
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('.card-container').load('meeting-list?listCount=' + count +'&category=2&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+        });
+
+        // Meeting 복구 버튼
+        $('.card-container').on('click', '.meeting-fix-button', function() {
+            if (confirm) {
+                $.ajax({
+                    "url": 'fix-meeting',
+                    "method" : 'POST',
+                    "data" : "scheduleBoardNo=" + $(this).data('scheduleboardno'),
+                    "success" : (response, status, xhr) => {
+                        if (response == "success") {
+                            $('.card-container').load('meeting-list?listCount=' + count +'&category=2&projectNo=' + /*[[${ project.scheduleNo }]]*/'');
+                        }
+                    },
+                    "error" : (xhr, status, err) => {
+                        alert("전송 실패");
+                    }
+                });
+            }
+        });
+
+        // 엑셀 다운로드 기능
+        $('.card-container').on('click', '.meeting-download-button', function(e) {
+            const idx = $(this).data('idx');
+
+            let form = $(`.excel${idx}`);
+            let dataArr = [];
+            for (let i = 0; i < form.length; i++) {
+                dataArr.push(form.eq(i).val());
+                console.log(dataArr[i]);
+            }
+            const params = new URLSearchParams({ dataArr: JSON.stringify(dataArr) }).toString();
+
+            location.href = `/excel/download?${params}`;
+        });
+
+        // 개인 진행도 사원 추가 버튼
+        $('.add-emp-button').on('click', function() {
+            const addEmpForm = $('#addEmpForm');
+            const data = addEmpForm.serializeArray();
+            $.ajax({
+                "url": addEmpForm.attr('action'),
+                "method" : addEmpForm.attr('method'),
+                "data" : data,
+                "success" : (response, status, xhr) => {
+                    if (response == "success") {
+                        location.reload();
+                    } else {
+                        alert('이미 있는 사원입니다.');
+                    }
+                },
+                "error" : (xhr, status, err) => {
+                    alert("전송 실패");
+                }
+            });
+        });
+
+        // 개인 진행도 사원 삭제 버튼 기능
+        $('.todo-delete-button').on('click', function(e) {
+            const empName = $(this).data('empname');
+            const projectNo = $(this).data('projectno');
+            const empId = $(this).data('empid');
+
+            const ok = window.confirm(`${empName} 님을 삭제하시겠습니까?`);
+
+            if (ok) {
+                location.href = 'remove-emp?empId=' + empId + '&projectNo=' + projectNo;
+            }
+        });
+
+
+        empId = /*[[${session.loginUser.empId}]]*/ 0;initializeWebSocket(empId);
+    });
+</script>
+
+
+</body>
+</html>

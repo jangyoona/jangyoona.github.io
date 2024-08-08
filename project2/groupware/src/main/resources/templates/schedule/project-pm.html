@@ -1,0 +1,5 @@
+<div xmlns:th="http://www.thymeleaf.org" class="pm-list">
+    <input type="hidden" name="schedulePm" th:value="${employee.empId}">
+    <span th:text="${employee.empName}"></span>
+    <button type="button" class="btn btn-light pm-remove-button" th:data-empid="${employee.empId}"><i class="fas fa-times"></i></button>
+</div>

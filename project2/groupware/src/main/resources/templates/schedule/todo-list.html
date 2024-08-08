@@ -1,0 +1,92 @@
+<div class="card-body p-0" xmlns:th="http://www.thymeleaf.org">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>상태 변경</th>
+            <th>ToDo</th>
+            <th>기간</th>
+            <th>상태</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr th:each="schedule, scheduleState : ${schedules}">
+
+                <td th:if="${#ctx.session.loginUser.empId == schedule.empId}" th:data-idx="${scheduleState.index}" style="width: 15%">
+                    <button type="button" class="btn btn-success success-button"
+                            th:if="${schedule.userScheduleStatus != '완료'}">
+                        완료
+                    </button>
+                    <button type="button" class="btn btn-warning progress-button"
+                            th:data-idx="${scheduleState.index}"
+                            th:if="${schedule.userScheduleStatus != '진행'}">
+                        진행
+                    </button>
+                    <button type="button" class="btn btn-primary edit-button"
+                            th:data-idx="${scheduleState.index}"
+                            th:if="${schedule.userScheduleStatus != '완료'}">
+                        수정
+                    </button>
+                    <button type="button" class="btn btn-info submit-button" th:data-idx="${scheduleState.index}" style="display: none;">
+                        수정하기
+                    </button>
+                    <button type="button" class="btn btn-secondary cancel-button" th:data-idx="${scheduleState.index}" style="display: none;">
+                        취소
+                    </button>
+                    <button type="button" class="btn btn-danger delete-button"
+                            th:data-idx="${scheduleState.index}"
+                            th:data-userscheduleno="${schedule.userScheduleNo}">
+                        삭제
+                    </button>
+                </td>
+                <td th:if="${#ctx.session.loginUser.empId != schedule.empId}" style="width: 15%"></td>
+                <td>
+                    <form th:class='|modifyTodoForm${scheduleState.index}|' action="modify-todo" method="POST">
+                        <div class="content-div" th:text="${schedule.userScheduleContent}"></div>
+                        <input type="hidden" name="userScheduleNo" th:value="${schedule.userScheduleNo}">
+                        <input type="hidden" name="scheduleNo" th:value="${schedule.scheduleNo}">
+                        <input id="scheduleBoardContent" class="form-control content-input" name="userScheduleContent" th:value="${schedule.userScheduleContent}" style="display: none;">
+                    </form>
+                </td>
+                <td>
+                    <form th:class='|modifyTodoForm${scheduleState.index}|' action="modify-todo" method="POST">
+                        <span class="start-date" th:text='|${ #dates.format(schedule.userScheduleStartDate, "yyyy-MM-dd hh:mm") } ~ |'></span>
+                        <span class="end-date" th:text='${ #dates.format(schedule.userScheduleEndDate, "yyyy-MM-dd hh:mm") }'></span>
+                        <input type="text" name="userScheduleStartDate" class="form-control datepicker start-input"
+                               th:value='${ #dates.format(schedule.userScheduleStartDate, "yyyy-MM-dd hh:mm") }' style="display: none;">
+                        <input type="text" name="userScheduleEndDate" class="form-control datepicker end-input"
+                               th:value='${ #dates.format(schedule.userScheduleEndDate, "yyyy-MM-dd hh:mm") }' style="display: none;">
+                    </form>
+                </td>
+                <td>
+                    <form th:class='modifyStatusForm' action="modify-status" method="POST">
+                        <input type="hidden" name="userScheduleNo" th:value="${schedule.userScheduleNo}">
+                        <input type="hidden" name="scheduleNo" th:value="${schedule.scheduleNo}">
+                        <input type="hidden" name="userScheduleStatus" th:value="${schedule.userScheduleStatus == '진행' ? '완료' : '진행'}">
+                    </form>
+                    <span th:if="${schedule.userScheduleStatus == '진행'}" name="userScheduleStatus" class="badge bg-warning status">진행</span>
+                    <span th:if="${schedule.userScheduleStatus == '완료'}" name="userScheduleStatus" class="badge bg-success status">완료</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="card-tools">
+    <!--          <ul class="pagination pagination-sm float-right">-->
+    <!--            <li class='page-item'>-->
+    <!--              <a class='page-link' href='#' aria-label='Previous'><span aria-hidden='true'>&laquo;</span></a>-->
+    <!--            </li>-->
+    <!--            <li class='page-item'><a class='page-link' href='javascript:'>Previous</a></li>-->
+    <!--            <li class="page-item"><a class="page-link" href="#">1</a></li>-->
+    <!--            <li class="page-item"><a class="page-link" href="#">2</a></li>-->
+    <!--            <li class="page-item"><a class="page-link" href="#">3</a></li>-->
+    <!--            <li class='page-item disabled'><a class='page-link' href='javascript:'>Next</a></li>-->
+    <!--            <li class='page-item disabled'>-->
+    <!--              <a class='page-link' href='javascript:' aria-label='Next'><span aria-hidden='true'>&raquo;</span></a>-->
+    <!--            </li>-->
+    <!--          </ul>-->
+    <nav aria-label="Page navigation example" id="navigation">
+        <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+            [(${ pager })]
+        </ul>
+    </nav>
+</div>

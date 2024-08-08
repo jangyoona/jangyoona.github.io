@@ -1,0 +1,163 @@
+
+<div class="col-md-6 card-todo-container" style="margin: 0 5%;" xmlns:th="http://www.thymeleaf.org">
+    <!-- Profile Image -->
+    <!-- /Profile Image -->
+    <form action="my-information-edit" method="post" id="information-form" enctype="multipart/form-data">
+        <div class="modal-body">
+            <div class="col">
+                <div class="card card-primary" style="padding: 20px;">
+<!--                        <h3 class="card-title">-->
+<!--                            <span th:text="${ #ctx.session.loginUser.empId + ' (' + #ctx.session.loginUser.empName + ')님' }" style="font-weight:bold; border-bottom: 1px solid black;"></span>-->
+<!--                        </h3>-->
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="col-9" style="margin:auto; margin-bottom:60px;">
+                                <img th:if="${photoExists}" th:src="@{'/employee-photo/' + ${ loginUser.empId } + '.jpg'}"
+                                     alt="user-image" class="img-circle img-fluid">
+
+                                <img th:unless="${photoExists}" th:src="@{/employee-photo/no_img.jpg}"
+                                     alt="default-image" class="img-circle img-fluid">
+                            <span style="font-weight:bold;">[ 프로필등록/변경 ]<input type="file" name="info-attach" id="info-attach" accept="image/jpeg, image/png"></span>
+                            </div>
+                        </div>
+
+                        <!-- -->
+                        <div class="form-group">
+                            <label for="empName">사번</label>
+                            <input type="text" class="form-control mb-2" id="empId" name="empId" th:value="${ #ctx.session.loginUser.empId }" readonly style="background-color:#ebebeb;">
+                        </div>
+                        <div class="form-group">
+                            <label for="empName">부서</label>
+                            <input type="text" class="form-control mb-2" id="deptName" name="deptName" th:value="${ #ctx.session.loginUser.deptName }" readonly style="background-color:#ebebeb;">
+
+                        </div>
+                        <div class="form-group">
+                            <label for="empPosition">직급</label>
+                            <input type="text" class="form-control mb-2" id="empPosition" name="empPosition" th:value="${ #ctx.session.loginUser.positionName }" readonly style="background-color:#ebebeb;">
+                        </div>
+                        <div class="form-group">
+                            <label for="empInDate">입사일자</label>
+                            <input type="text" class="form-control mb-2" id="empInDate"
+                                   th:value="${ #dates.format( #ctx.session.loginUser.employeeDetail.empInDate, 'yyyy-MM-dd' )}" readonly style="background-color:#ebebeb;">
+                        </div>
+                        <div class="form-group">
+                            <label for="empName">이름</label>
+                            <input type="text" class="form-control mb-2" id="empName" th:value="${ #ctx.session.loginUser.empName }" readonly style="background-color:#ebebeb;">
+                        </div>
+                        <div class="form-group">
+                            <label for="empBirthDate">생년월일</label>
+                            <input type="text" class="form-control mb-2" id="empBirthDate"
+                            th:value="${ #dates.format( #ctx.session.loginUser.employeeDetail.empBirthDate, 'yyyy-MM-dd') }" readonly style="background-color:#ebebeb;">
+                        </div>
+                        <div class="form-group">
+                            <label for="empPhone">휴대폰 번호</label>
+                            <input type="text" class="form-control mb-2" id="empPhone" name="empPhone" th:value="${ #ctx.session.loginUser.employeeDetail.empPhone }"
+                                   minlength="11" maxlength="11" onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" required placeholder="'-'없이 입력해 주세요">
+                        </div>
+                        <div class="form-group">
+                            <label for="empEmail">이메일</label>
+                            <input type="email" class="form-control mb-2" id="empEmail" name="empEmail" th:value="${ #ctx.session.loginUser.empEmail }"
+                                    onKeyup="/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/">
+                        </div>
+                            <label for="zipp_btn" class="form-label">주소</label><br/>
+                            <span style="display:flex; margin-bottom:5px;">
+                                <input type="button" id="zipp_btn" class="btn btn-primary" onclick="execDaumPostcode();" value="우편번호 찾기" style="cursor: pointer; width:50%; height:20%;"><br>
+                                <input type="text" class="form-control mb-2" id="zipp_code_id" name="zipp_code" maxlength="10" placeholder="우편번호" style="width:40%;">
+                             </span>
+                            <input type="text" class="form-control mb-2" name="empAddress" id="UserAdd1" maxlength="40" placeholder="도로명 주소" style="width: 100%;" readonly
+                                   th:value="${ #ctx.session.loginUser.employeeDetail.empAddress }" >
+                            <input type="text" class="form-control mb-2" name="empAddressDetail" id="UserAdd2" maxlength="40" placeholder="나머지 주소" style="width: 100%;"
+                                   th:value="${ #ctx.session.loginUser.employeeDetail.empAddressDetail }">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary request-modify-button-info" data-toggle="modal" data-target="#modal-attendance-edit-info">
+                                수정 요청하기
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submit-btn">저장</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" id="cancel-btn">취소</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+<!--    <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 100% !important; margin-top: 10%;"/>-->
+</div>
+
+<!--수정요청 모달-->
+<div class="modal fade" id="modal-attendance-edit-info">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">수정요청내용 입력</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="empId2" name="empId2">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">사유 입력</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="modifyDetail" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="modifyRequest" data-dismiss="modal">수정요청</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var empId = /*[[${#ctx.session.loginUser.empId}]]*/ || 'default_value';
+
+    $(document).ready(function() {
+        $('#modifyRequest').click(function() {
+            var modifyDetail = $('#modifyDetail').val();
+            console.log("EmpId: " + empId); // 콘솔에 empId 값 출력
+            console.log("ModifyDetail: " + modifyDetail); // 콘솔에 modifyDetail 값 출력
+
+           // 파일 형식 유효성
+           let formData = new FormData();
+           let fileInput = $('input[name="info-attach"]')[0];
+
+           let file_kind = fileInput.value.lastIndexOf('.');
+           let file_name = fileInput.value.substring(file_kind+1,fileInput.length);
+           let file_type = file_name.toLowerCase();
+
+           let check_file_type=new Array();
+
+           check_file_type=['jpg','png','jpeg','bmp', ''];
+
+           if(check_file_type.indexOf(file_type)==-1){
+            alert('프로필 사진은 이미지 파일만 선택할 수 있습니다');
+            let parent_Obj=fileInput.parentNode
+            let node=parent_Obj.replaceChild(fileInput.cloneNode(true),fileInput);
+            return false;
+           }
+
+            $.ajax({
+                type: "POST",
+                url: "/account/requestModify",
+                data: {
+                    empId: empId,
+                    modifyDetail: modifyDetail
+                },
+                success: function(response) {
+                    alert("수정 요청이 성공적으로 전송되었습니다.");
+                    // 필요 시 추가 작업
+                },
+                error: function(error) {
+                    alert("수정 요청 전송 중 오류가 발생했습니다.");
+                }
+            });
+        });
+    });
+</script>

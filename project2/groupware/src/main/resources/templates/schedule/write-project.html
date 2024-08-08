@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>프로젝트 추가</title>
+
+  <!-- jQuery -->
+  <script src="/plugins/jquery/jquery.min.js"></script>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Bootstrap Datepicker -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/dist/project-list/write-project.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <div class="card card-primary card-outline main-container">
+      <div class="card-header">
+        <h3 class="card-title">프로젝트 추가</h3>
+      </div>
+      <!-- /.card-header -->
+      <form id="writeProjectForm" action="add-project" method="POST">
+        <div class="card-body">
+          <div class="form-group">
+            <h5>프로젝트 제목</h5>
+            <input type="text" name="scheduleTitle" id="project-title" class="form-control" placeholder="프로젝트 제목">
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 시작 날짜</h5>
+            <input type="text" name="scheduleStartDate" id="project-startDate" class="form-control datepicker" placeholder="시작 날짜">
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 마감 날짜</h5>
+            <input type="text" name="scheduleEndDate" id="project-endDate" class="form-control datepicker" placeholder="마감 날짜">
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 상태</h5>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                상태 선택
+              </button>
+              <div class="dropdown-menu">
+                <a data-idx="0" class="dropdown-item project-status" href="#">진행중</a>
+                <a data-idx="1" class="dropdown-item project-status" href="#">계획중</a>
+              </div>
+              <div>
+                <input type="text" id="status-input" name="scheduleStatus" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 중요도</h5>
+            <input type="number" name="importance" id="project-importance" class="form-control" placeholder="1 ~ 5">
+          </div>
+          <div class="form-group">
+            <h5>참여 부서</h5>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                부서 목록
+              </button>
+              <div class="dropdown-menu">
+                <a th:each="dept, deptState : ${depts}" th:data-idx="${deptState.index}"
+                   th:text="${dept.deptName}"
+                   class="dropdown-item dept-item" href="#"></a>
+              </div>
+            </div>
+            <div class="dept-list-container">
+              <div th:each="dept, deptState : ${depts}" class="dept-list" th:data-idx="${deptState.index}">
+                <input type="hidden" th:value="${dept.deptNo}">
+                <span th:text="${dept.deptName}"></span>
+                <button type="button" class="btn btn-light remove-button"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <h5>참여 인원</h5>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend search-button emp-search-button">
+                <span class="input-group-text" id="basic-addon1">@</span>
+              </div>
+              <input type="text" id="empId-input" class="form-control" placeholder="사원 아이디" aria-label="Username" aria-describedby="basic-addon1">
+            </div>
+            <div class="emp-list-container">
+              <!-- 추가할 사원 -->
+            </div>
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 매니저</h5>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend search-button pm-search">
+                <span class="input-group-text" id="basic-addon2">@</span>
+              </div>
+              <input type="text" class="form-control" id="pm-value" placeholder="사원 아이디" aria-label="Username" aria-describedby="basic-addon2">
+            </div>
+            <div class="pm-list-container">
+              <!-- 프로젝트 매니저 -->
+            </div>
+          </div>
+          <div class="form-group">
+            <h5>프로젝트 내용</h5>
+            <textarea id="compose-textarea" class="form-control project-content" name="scheduleContent" style="height: 300px; resize: none;" placeholder="프로젝트 내용"></textarea>
+          </div>
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+          <div class="float-right">
+            <button type="button" class="btn btn-primary submit-project-button"><i class="fas fa-edit"></i> Send</button>
+          </div>
+        </div>
+      </form>
+      <!-- /.card-footer -->
+    </div>
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- Bootstrap Datepicker -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script type="text/javascript" th:inline="javascript">
+  $(window).on('load', function() {
+    const currentPath = '/schedule/list'
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    $(".datepicker").datepicker({
+        format: "yyyy-mm-dd",
+        autoclose: true,
+        todayHighlight: true
+    });
+
+    // Project 상태
+    $('.project-status').on('click', function(e) {
+      $('#status-input').val($(this).text());
+    });
+
+    // 중요도 input 값 검사
+    $('#project-importance').on('input', function(e) {
+      const numValue = Number($(this).val());
+      if (numValue > 5) {
+          alert('1 ~ 5 사이 숫자를 입력해주세요');
+          $(this).val(5);
+          return
+      }
+      if (numValue == 0) {
+          $(this).val('');
+      }
+    });
+
+    // 참여 부서
+    let deptArr = [];
+
+    $('.dept-item').on('click', function(e) {
+        const idx = $(this).data('idx');
+
+        $('.dept-list').eq(idx).css('display', 'flex');
+        const dept = $('.dept-list').eq(idx).children('input').val();
+
+        const index = deptArr.findIndex(v => v == dept);
+        if (index === -1) {
+            deptArr.push(dept);
+        }
+
+    });
+
+    $('.remove-button').on('click', function(e) {
+        const idx = $(this).parent().data('idx');
+
+        $('.dept-list').eq(idx).css('display', 'none');
+        const dept = $('.dept-list').eq(idx).prev('input').val();
+
+        const index = deptArr.findIndex(v => v == dept);
+
+        deptArr.splice(index, 1);
+
+    });
+
+    // 참여인원 추가 기능
+    let empArr = [];
+    $('.emp-search-button').on('click', function(e) {
+      const empId = $('#empId-input').val();
+      if (empId.length == 0 ) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('아이디를 입력해주세요');
+      } else {
+        $.ajax({
+            "url": "add-project-emp",
+            "method" : "POST",
+            "data" : "empId=" + empId + '&deptArr=' + deptArr,
+            "success" : (response, status, xhr) => {
+                if (response == "success") {
+                  empArr.push(empId);
+                  $('.emp-list-container').load('project-people?empArr=' + empArr);
+                } else if (response == "failDept") {
+                  alert('참여 부서에 해당하는 사원이 아닙니다.');
+                } else {
+                  alert('일치하는 사원이 없습니다.');
+                }
+            },
+            "error" : (xhr, status, err) => {
+                alert("일치하는 사원이 없습니다.");
+            }
+        });
+       }
+    });
+
+    // 참여 인원 삭제 버튼 기능
+    $('.emp-list-container').on('click', '.emp-remove-button', function(e){
+      const empId = $(this).data('empid');
+      const index = empArr.findIndex(v => v == empId);
+      empArr.splice(index, 1);
+      if (empArr.length == 0) {
+        $('.emp-list').remove();
+      } else {
+        $('.emp-list-container').load('project-people?empArr=' + empArr);
+      }
+    });
+
+    // 프로젝트 매니저 추가 기능
+    let pmId = '';
+    $('.pm-search').on('click', function(e) {
+      const empId = $('#pm-value').val();
+      $.ajax({
+        "url": "add-project-emp",
+        "method" : "POST",
+        "data" : "empId=" + empId + '&deptArr=' + deptArr + '&empArr=' + empArr,
+        "success" : (response, status, xhr) => {
+          if (response == "success") {
+            pmId = empId;
+            $('.pm-list-container').load('project-pm?empId=' + empId);
+          } else if (response == "failDept") {
+            alert('참여 부서에 해당하는 사원이 아닙니다.');
+          } else if (response == "failEmp") {
+            alert('참여 인원에 해당하는 사원이 없습니다.');
+          } else {
+            alert('일치하는 사원이 없습니다.');
+          }
+        },
+        "error" : (xhr, status, err) => {
+            alert("일치하는 사원이 없습니다.");
+        }
+      });
+    });
+
+    // pm 삭제 버튼 기능
+    $('.pm-list-container').on('click', '.pm-remove-button', function(e){
+      pmId = '';
+      $('.pm-list').remove();
+    });
+
+
+
+    // 빈 값 검사 및 project 추가 ajax
+    $('.submit-project-button').on('click', function(e) {
+
+      const title = $('#project-title').val();
+      const startDate = $('#project-startDate').val();
+      const endDate = $('#project-endDate').val();
+      const status = $('#status-input').val();
+      const importance = $('#project-importance').val();
+      const content = $('.project-content').val();
+
+      if (title.length == 0) return alert('제목을 입력해주세요');
+      if (startDate.length == 0) return alert('시작 날짜를 입력해주세요');
+      if (endDate.length == 0) return alert('마감 날짜를 입력해주세요');
+      if (status.length == 0) return alert('프로젝트 상태를 선택해주세요.');
+      if (importance.length == 0) return alert('중요도를 입력해주세요');
+      if (deptArr.length == 0) return alert('참여 부서를 추가해주세요');
+      if (empArr.length == 0) return alert('참여 인원을 추가해주세요');
+      if (pmId.length == 0) return alert('프로젝트 매니저를 추가해주세요');
+      if (content.length == 0) return alert('내용을 입력해주세요');
+
+      const writeProjectForm = $('#writeProjectForm');
+      const data = writeProjectForm.serializeArray();
+
+      data.push({name : "deptArr", value : deptArr});
+      data.push({name : "employeeArr", value : empArr});
+
+      $.ajax({
+        "url": writeProjectForm.attr('action'),
+        "method" : writeProjectForm.attr('method'),
+        "data" : data,
+        "dataType" : "text",
+        "success" : (response, status, xhr) => {
+            if (response == "success") {
+              alert('추가되었습니다.');
+            }
+        },
+        "error" : (xhr, status, err) => {
+            alert("추가 실패");
+        }
+      });
+
+
+
+    });
+
+    empId = /*[[${session.loginUser.empId}]]*/ 0;initializeWebSocket(empId);
+
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approval-Write</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    <!-- summernote -->
+    <link rel="stylesheet" href="../../plugins/summernote/summernote-bs4.min.css">
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="../../plugins/codemirror/codemirror.css">
+    <link rel="stylesheet" href="../../plugins/codemirror/theme/monokai.css">
+    <!-- SimpleMDE -->
+    <!--  <link rel="stylesheet" href="../../plugins/simplemde/simplemde.min.css">-->
+
+    <style>
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .button-container input {
+              margin-left: 10px;
+        }
+
+       table {
+                width: auto;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 8px;
+                text-align: left;
+            }
+            th {
+                background-color: #f4f4f4;
+                white-space: nowrap;
+            }
+            td {
+                width: 200px;
+            }
+
+    </style>
+</head>
+
+
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!--end Main Sidebar Container -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>전자 결재</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">전자 결재</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+
+
+        <section class="content">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-outline card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                전자결재 | <strong>결재문 작성</strong>
+                            </h3>
+                            <br>
+                            <hr>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- Horizontal Form -->
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">전자결재문서</h3>
+                            </div>
+                            <!-- /.card-header -->
+                            <!-- form start -->
+                            <form class="approval-write"  name="approval-write" method="post" enctype="multipart/form-data">
+
+                                <div class="card-body">
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">기안자</label>
+                                        <div class="col-sm-10">
+                                            <input type="hidden" name="empName" th:value='${ #ctx.session.loginUser.empName }'>
+                                            <input type="hidden" name="empId" th:value='${ #ctx.session.loginUser.empId }'>
+                                            <input type="hidden" name="approvalSequence" th:value= 0 >
+                                            <span th:text='${ #ctx.session.loginUser.empName }'></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="inputTitle" class="col-sm-2 col-form-label">제목</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" name="approvalTitle" class="form-control" id="inputTitle" placeholder="title">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">결재선</label>
+                                        <div class="col-sm-10" id="approvers-container">
+                                            <div class="approver-group" id="approver-template" style="display: none;">
+                                                <label class="col-sm-2 col-form-label">결재자</label>
+                                                <select name="line[]" class="form-control approver-select">
+                                                    <option value="">결재자 선택</option>
+                                                    <option th:each="employee : ${employees}" th:value="${employee.empId}" th:text="${employee.deptName}  + ' - ' + ${employee.positionName}  + ' - ' + ${employee.empName} "></option>
+                                                </select>
+                                                <button type="button" class="btn btn-block btn-secondary" onclick="removeApprover(this)">삭제</button>
+                                            </div>
+                                            <br>
+                                        </div>
+                                        <div class="col-sm-10 offset-sm-2">
+                                            <button type="button" class="btn btn-block btn-info" onclick="addApprover()">결재자 추가</button>
+                                        </div></div>
+                                    <hr>
+                                    <hr>
+
+                                    <!--                  결재선 다운 버튼-->
+                                    <div class="input-group-prepend">
+                                        <button type="button" name="approval-form-btn" class="btn btn-danger" data-toggle="dropdown" th:text="'결재선'">
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:each="form : ${approverSave}"  class="dropdown-item">
+                                                <a href="javascript:" class="load-document" th:data-approvalLinetitle="${form.empId}" th:text="${form.approvalTitle}"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+
+
+
+
+
+                                    <div class="input-group-prepend">
+                                        <button type="button" name="approval-form-btn" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown" th:text="'결재양식'">
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:each="form : ${approvalForm}" th:if="${form.documentActive}" class="dropdown-item">
+                                                <a href="javascript:" class="load-document" th:data-approvalformtitle="${form.approvalFormTitle}" th:text="${form.approvalFormTitle}"></a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                        <!-- 윤아 -->
+                                        <div class="col-2">
+                                            <label for="attach">첨부파일</label>
+                                            <input type="file" name="attach" id="attach" class="form-control" required style="height: auto;">
+
+                                            <button type="button" name="approval-form-btn" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown" th:text="'파일보관함'">
+                                            </button>
+                                            <ul class="dropdown-menu user-file-list">
+                                                <li th:each="userFile : ${userFileList}" class="dropdown-item" >
+                                                    <a href="javascript:" class="load-document user-file" th:text="${ userFile.userFileName }" th:data-user-filename="${ userFile.userFileName }" th:data-file-no="${userFile.fileNo}"></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <!-- 유저 개인 파일 아래에 하나씩 추가 -->
+                                        <div id="file-names-container"></div>
+                                        <!-- /윤아 -->
+
+                                    <input type="hidden" name="approvalFormTitle" id="approvalFormTitle">
+                                    <hr>
+                                    <hr>
+                                    <button type="button" class="btn btn-block btn-outline-info" id="go-back-btn">목록보기</button>
+                                    <button type="submit" class="btn btn-block btn-outline-info" name="action" id="approval-save-btn" onclick="setApprovalActive('임시저장')">임시저장</button>
+                                    <button type="submit" class="btn btn-block bg-gradient-info" name="action" id="approval-request" onclick="setApprovalActive('결재대기')">결제요청</button>
+                                </div>
+                                <div>
+                                    <input type="hidden" name="approvalActive" id="approvalActive">
+                                </div>
+
+                                <div class="card-body">
+                                    <label for="summernote"></label>
+                                    <textarea id="summernote" name="approvalContent" ></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.col-->
+            </div>
+            <!-- ./row -->
+
+            <!-- ./row -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- Summernote -->
+<script src="../../plugins/summernote/summernote-bs4.min.js"></script>
+<!-- CodeMirror -->
+<script src="../../plugins/codemirror/codemirror.js"></script>
+<script src="../../plugins/codemirror/mode/css/css.js"></script>
+<script src="../../plugins/codemirror/mode/xml/xml.js"></script>
+<script src="../../plugins/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+
+<script type="text/javascript">
+    $(function () {
+        // 윤아 //
+        let filesAdded = [];
+        $('.user-file').on('click', function(e) {
+                const fileName = $(this).data('user-filename');
+                const fileNo = $(this).data('file-no');
+
+                for(let i=0; i<filesAdded.length; i++) {
+                    if(filesAdded[i] == fileNo){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                }
+                // 파일 이름과 삭제 버튼을 추가합니다.
+                const fileEntry = `<span class="choiceFile">
+                    ${fileName}
+                    <button type="button" class="btn btn-danger btn-sm ml-2 file-remove-btn" data-file-no="${fileNo}"><i class="fas fa-times"></i></button></span>
+                `;
+
+                // 파일 이름을 #file-names-container에 추가합니다.
+                $('#file-names-container').append(fileEntry);
+                filesAdded.push(fileNo);
+
+                alert(filesAdded);
+        });
+
+        $('#file-names-container').on('click', '.file-remove-btn', function() {
+            const fileNo = $(this).data('file-no');
+            // const fileName = $(this).prev().text();
+            const fileName = $(this).parent().text();
+
+            const fileElement = $(this).parent(); // 삭제 버튼의 부모 요소인 span을 찾습니다.
+            fileElement.remove(); // 해당 span을 삭제합니다.
+
+            const idx = filesAdded.findIndex(v => v == fileNo);
+            filesAdded.splice(idx, 1);
+
+        });
+        // /윤아 //
+
+      // Initialize Summernote
+      $('#summernote').summernote({
+        height: 600
+      });
+
+      $('#go-back-btn').on('click', function(event) {
+         location.href = 'approval-list';
+      });
+
+
+    $('#approval-save-btn').on('click', function(event) {
+      event.preventDefault();
+      setApprovalActive('임시저장');
+      $('form[name="approval-write"]').submit();
+    });
+
+    $('#approval-request').on('click', function(event) {
+      event.preventDefault();
+      setApprovalActive('결재대기');
+      $('form[name="approval-write"]').submit();
+    });
+
+      $('.load-document').on('click', function(event) {
+        event.preventDefault();
+        const approvalFormTitleId = $(this).data('approvalformtitle');
+        console.log('Selected form title ID:', approvalFormTitleId);
+
+        $('#approvalFormTitle').val(approvalFormTitleId);
+
+        $.ajax({
+          url: '/forms/approval/get-document',
+          method: 'GET',
+          dataType: 'json', // Expecting JSON response
+          data: { 'approvalFormTitleId': approvalFormTitleId },
+          success: function(response) {
+            console.log('Document content:', response);  // Debug log
+            // Load data into Summernote editor
+            if (response && response.approvalFormDocument) {
+              $('#summernote').summernote('code', response.approvalFormDocument);
+            } else {
+              alert('Failed to load document content.');
+            }
+          },
+          error: function(xhr, status, error) {
+            // Log error message to console
+            console.error('Template load error:', error);
+          }
+        });
+
+         $('#approval-save-btn').on('click', function(event) {
+          event.preventDefault();
+         $('approval-save-btn').attr('action', '/approval-save').submit();
+         });
+
+      });
+
+      // 현재 페이지의 URL을 가져옵니다.
+      const currentUrl = window.location.href;
+      let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+      const pathIndex = currentPath.indexOf("?");
+      if (pathIndex != -1 ) {
+          currentPath = currentPath.substring(0, pathIndex);
+      }
+      // 현재 페이지의 URL과 sidebar의 URL을 비교
+      $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    });
+
+    function addApprover() {
+      var container = document.getElementById('approvers-container');
+      var template = document.getElementById('approver-template');
+
+      // Clone the template
+      var newApprover = template.cloneNode(true);
+      newApprover.style.display = '';
+      newApprover.removeAttribute('id');
+
+      // Append the new approver field
+      container.appendChild(newApprover);
+    }
+
+    function removeApprover(button) {
+      var container = document.getElementById('approvers-container');
+      var approverGroup = button.parentElement;
+
+      // Remove the approver field
+      container.removeChild(approverGroup);
+    }
+    function setApprovalActive(value) {
+        $('#approvalActive').val(value)
+      }
+
+</script>
+</body>
+</html>

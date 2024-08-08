@@ -1,0 +1,119 @@
+<div class="card-body table-responsive p-0" xmlns:th="http://www.thymeleaf.org">
+    <table class="table table-hover text-nowrap">
+        <thead>
+        <tr>
+            <th>사번</th>
+            <th>이름</th>
+            <th>날짜</th>
+            <th>출근시간</th>
+            <th>퇴근시간</th>
+            <th>상태</th>
+            <th>사유</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="empAttendance : ${empAttendance}">
+            <input type="hidden" th:value="${ #dates.format(empAttendance.attdDate, 'yyyy-MM-dd')}" id="attd-attdDate">
+
+            <td th:text="${empAttendance.empId}"></td>
+            <td th:text="${#ctx.session.loginUser.empName}"></td>
+            <td th:text="${#dates.format(empAttendance.attdDate, 'yyyy-MM-dd')}"></td>
+            <td th:text="${#dates.format(empAttendance.attdIn, 'HH:mm:ss')}"></td>
+            <td>
+                <span th:if="${#dates.format(empAttendance.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="|[퇴근 미등록]|"></span>
+                <span th:unless="${#dates.format(empAttendance.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="${#dates.format(empAttendance.attdOut, 'HH:mm:ss')}"></span>
+            </td>
+            <td th:text="${empAttendance.attdStatus}"></td>
+            <td th:text="${empAttendance.attdDetail}"></td>
+            <td>
+                <button type="button" class="btn btn-primary request-modify-button" data-toggle="modal" data-target="#modal-attendance-edit">
+                    수정 요청하기
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- pager -->
+<nav aria-label="Page navigation example" id="navigation">
+    <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+        [(${ pager })]
+    </ul>
+</nav>
+
+
+<div class="modal fade" id="modal-attendance-edit">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">수정사유 입력</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="empId2" name="empId2">
+                <input type="hidden" id="attdDate2" name="attdDate2">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">사유 입력</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDetail" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="modifyRequest" data-dismiss="modal">수정요청</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<nav aria-label="Page navigation example" class="pager-btn" style="position: relative; left: 45%; top: 25px;" xmlns:th="http://www.thymeleaf.org">-->
+<!--    <ul class="pagination">-->
+<!--        &lt;!&ndash; First Page &ndash;&gt;-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" th:href="@{|my-attendance?pageNum=1|}" aria-label="current">-->
+<!--                <span aria-hidden="true">&lt;&lt;</span>-->
+<!--            </a>-->
+<!--        </li>-->
+
+<!--        &lt;!&ndash; Previous Page &ndash;&gt;-->
+<!--        <li class="page-item" th:if="${pageVO.pageNum >= 1}">-->
+<!--            <a class="page-link" th:href="@{|my-attendance?pageNum=${pageVO.prev == 0 ? 1 : pageVO.prev }|}" aria-label="prev">-->
+<!--                <span aria-hidden="true">&lt;</span>-->
+<!--            </a>-->
+<!--        </li>-->
+
+<!--        &lt;!&ndash; Page Numbers &ndash;&gt;-->
+<!--        <th:block th:each="num : ${#numbers.sequence(pageVO.startPage, pageVO.endPage)}">-->
+<!--            <li class="page-item" th:class="${pageVO.pageNum == num} ? 'active' : ''">-->
+<!--                <a class="page-link" th:href="@{|my-attendance?pageNum=${num}|}" th:text="${num}"></a>-->
+<!--            </li>-->
+<!--        </th:block>-->
+
+<!--        &lt;!&ndash; Next Page &ndash;&gt;-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" th:href="@{|my-attendance?pageNum=${ pageVO.next < pageVO.lastPage ? pageVO.next : pageVO.lastPage }|}" aria-label="next">-->
+<!--                <span aria-hidden="true">&gt;</span>-->
+<!--            </a>-->
+<!--        </li>-->
+
+<!--        &lt;!&ndash; Last Page &ndash;&gt;-->
+<!--        &lt;!&ndash;                    <li class="page-item" th:if="${pageVO.pageNum < pageVO.lastPage}">&ndash;&gt;-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" th:href="@{|my-attendance?pageNum=${pageVO.lastPage}|}" aria-label="lastPage">-->
+<!--                <span aria-hidden="true">&gt;&gt;</span>-->
+<!--            </a>-->
+<!--        </li>-->
+<!--    </ul>-->
+<!--</nav>-->
+<!-- /pager -->

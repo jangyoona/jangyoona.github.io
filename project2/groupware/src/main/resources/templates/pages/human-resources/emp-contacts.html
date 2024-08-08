@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>사내 연락처</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+  <!-- Navbar -->
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- /.navbar -->
+
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light" style="padding-left: 2rem; padding-right: 2rem; ">
+<!--          <h1 class="navbar-brand" style="font-size: 2rem;">연락처</h1>-->
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent" style="justify-content: end;">
+              <form class="form-inline my-2 my-lg-0">
+                  <select class="custom-select select-value">
+                      <option value="0" selected>전체 검색</option>
+                      <option value="1">사번</option>
+                      <option value="2">이름</option>
+                      <option value="3">부서</option>
+                      <option value="4">직책</option>
+                  </select>
+                  <input class="form-control mr-sm-2 search-value" type="text" placeholder="검색" aria-label="Search">
+                  <button class="btn btn-outline-success my-2 my-sm-0 search-button" type="submit"><i class="fas fa-search"></i></button>
+              </form>
+          </div>
+      </nav>
+
+    <!-- Main content -->
+    <section class="content">
+
+      <!-- Default box -->
+      <!-- /.card -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script th:inline="javascript">
+
+$(document).ready(function() {
+
+    $('.content').load('contact-module?selectValue=0', function(){
+        phoneFormat();
+    });
+
+    // 연락처 형식 변환 함수
+    function formatPhoneNumber(phoneNumber) {
+          // 숫자만 추출
+          let cleaned = ('' + phoneNumber).replace(/\D/g, '');
+
+          // 전화번호 포맷
+          if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+          }
+          return phoneNumber; // 포맷이 잘못된 경우 원본 반환
+    }
+    function phoneFormat() {
+        $('.phone-replace').each(function() {
+              let $this = $(this);
+              let phoneNumber = $this.text().trim(); // 원본 전화번호를 가져옴
+              let formattedNumber = formatPhoneNumber(phoneNumber); // 포맷팅
+              $this.html('<span class="fa-li"><i class="fas fa-mobile-alt"></i></span> ' + formattedNumber); // HTML 업데이트
+        });
+    }
+
+
+    $('.content').on('click', '.bookmark-add-btn', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        const empId = $(this).data('empid'); // 저장할 사원 아이디
+        if(confirm('즐겨찾기를 등록할까요?')) {
+            $.ajax({
+                  "url" : "/pages/human-resources/bookmark-add",
+                  "method" : "GET",
+                  "data" : { "contactId" : empId },
+                  "success": function(result, status, xhr) {
+                        if(result === 'success'){
+                            alert('북마크 추가 완료되었습니다');
+                        } else {
+                            alert('이미 등록된 사원입니다.')
+                        }
+                  },
+                  "error": function(xhr, status, err) {
+                      alert("북마크 추가 오류");
+                  }
+           });
+        }
+    });
+
+
+    // 페이징 처리
+    $('.content').on('click', '.page-item', function(e) {
+        let pageNo = $('.paging').data('pageno');
+        const lastPageNo = Math.floor(($('.paging').data('datacount') / 9) + (($('.paging').data('datacount') % 9) > 0 ? 1 : 0));
+        if (/«/.test($(this).text())) pageNo = 1;
+        if ($(this).text() == 'Previous') pageNo = pageNo - 1 < 1 ? 1 : pageNo - 1;
+        if ($(this).text() == 'Next') pageNo = pageNo + 1 > lastPageNo ? lastPageNo : pageNo + 1;
+        if (/»/.test($(this).text())) pageNo = lastPageNo;
+        if (!isNaN($(this).text())) pageNo = $(this).text();
+
+        let selectValue = $('.select-value').val();
+        let searchValue = $('.search-value').val();
+
+        $('.content').load('contact-module?pageNo=' + pageNo + '&selectValue=' + selectValue + '&searchValue=' + searchValue, function(){
+            phoneFormat();
+        });
+    });
+
+
+    // 검색 처리
+    $('.search-button').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const selectValue = $('.select-value').val();
+        const searchValue = $('.search-value').val();
+        console.log(selectValue);
+        console.log(searchValue);
+        $('.content').load('contact-module?selectValue=' + selectValue + '&searchValue=' + searchValue, function(){
+            phoneFormat();
+        });
+    });
+});
+
+</script>
+</body>
+</html>

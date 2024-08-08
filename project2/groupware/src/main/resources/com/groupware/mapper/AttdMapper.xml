@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.AttdMapper">
+
+    <!-- scheduler로 모든 사원의 출근 정보를 등록하기 위한 쿼리 -->
+    <insert id="insertAllAttendance" parameterType="hashmap">
+
+        INSERT INTO attendance (emp_id, attd_date)
+        VALUES (#{ empId }, #{attdDate})
+
+    </insert>
+
+    <!-- scheduler로 모든 사원의 출근 정보를 등록하기 위한 쿼리 -->
+    <insert id="insertAllAttendanceDayOff" parameterType="hashmap">
+
+        INSERT INTO attendance (
+            emp_id,
+            attd_date,
+            attd_status
+        )
+
+        VALUES (
+            #{ empId },
+            #{ attdDate },
+            '휴무'
+        )
+
+    </insert>
+
+    <!-- 출근할 때 데이터 업데이트하는 쿼리 -->
+    <update id="updateAttendanceCheckIn" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_in = #{ attdIn },
+        attd_status = #{ attdStatus },
+        attd_detail = #{ attdDetail }
+
+        WHERE
+        emp_id = #{empId} AND
+        attd_date = #{attdDate}
+
+    </update>
+
+    <!--퇴근할 때 데이터 업데이트하는 쿼리-->
+    <update id="updateAttendanceCheckOut" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_out = #{ attdOut },
+        attd_status = #{ attdStatus },
+        attd_detail = #{ attdDetail }
+
+        WHERE
+        emp_id = #{ empId } AND
+        attd_date = #{ attdDate }
+
+    </update>
+    <!-- 관리자 전용 데이터 업데이트 쿼리 -->
+    <update id="updateAttendance" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_in = #{ attdIn },
+        attd_out = #{ attdOut },
+        attd_status = #{ attdStatus },
+        attd_detail = #{ attdDetail }
+
+        WHERE
+        emp_id = #{ empId } AND
+        attd_date = #{ attdDate }
+
+    </update>
+    <!--관리자에게 근태내역 수정을 요청하는 쿼리-->
+    <update id="updateAttendanceToRequestModify" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_status = '수정 요청중',
+        attd_detail = #{ attdDetail }
+
+        WHERE
+        emp_id = #{ empId } AND
+        attd_date = #{ attdDate }
+
+    </update>
+
+    <!--'출근 미등록'상태일 시 결근으로 업데이트하는 쿼리-->
+    <update id="updateAttendanceStatusToAbsence" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_status = '결근',
+        attd_detail = '결근'
+
+        WHERE
+        attd_status = '미출근' AND
+        attd_in = '2000-01-01 00:00:00'
+
+    </update>
+
+    <!--퇴근 미등록 또는 익일 퇴근 시 상태변경되는 쿼리-->
+    <update id="updateAttendanceStatusToAbnormal" parameterType="AttendanceDto">
+
+        UPDATE attendance
+
+        SET
+        attd_status = '비정상',
+        attd_detail = '퇴근 미등록 또는 익일 퇴근(수정요청 요망)'
+
+        WHERE
+        attd_status IN ('근무중', '근무중(지각)')
+
+    </update>
+    <!-- 아래부터 조회관련 -->
+
+    <!--모든 근태 내역 조회 (관리자 전용)-->
+    <select id="findAllAttendance" resultType="AttenDanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        ORDER BY
+        attd_date DESC,
+        attd_out DESC
+
+    </select>
+
+    <select id="findAttendanceByAttdDate" parameterType="hashmap" resultType="AttendanceDto">
+
+        SELECT
+        attd_no attdNo,
+        attd_in attdIn,
+        attd_out attdOut,
+        attd_date attdDate,
+        emp_id empId,
+        attd_status attdStatus,
+        attd_detail attdDetail
+
+        FROM attendance
+
+        WHERE
+        attd_date = #{ attdDate }
+
+    </select>
+
+    <!-- 관리자가 업데이트할 근태 내역 가져오는 쿼리-->
+    <select id="findAttendanceByEmpNameAndAttdDate" parameterType="map" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail
+
+        FROM attendance a
+
+        WHERE
+        a.emp_id = #{ empId } AND
+        a.attd_date = #{ attdDate }
+
+        <!--오늘 날짜로 찾아올지 or 출근 날짜로 찾아올지-->
+
+    </select>
+
+    <!-- 부서별 금일 근태 현황 조회하는 쿼리 -->
+    <select id="findAttendanceByDeptNoToday" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON e.position_no = p.position_no
+
+        WHERE
+        e.dept_no = #{ deptNo } AND
+        a.attd_date = CURDATE()
+
+        ORDER BY p.position_no DESC
+
+    </select>
+
+    <!--사원 한 명의 근태 내역 조회하는 쿼리-->
+    <select id="findAttendanceByEmpId" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON e.position_no = p.position_no
+
+        WHERE a.emp_id = #{ empId }
+
+        ORDER BY a.attd_date DESC
+
+    </select>
+
+    <!--사원 한 명의 휴가 내역 조회하는 쿼리-->
+    <select id="findAttendanceLeavesByEmpId" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON e.position_no = p.position_no
+
+        WHERE a.emp_id = #{ empId } AND a.attd_status = '휴가'
+
+        ORDER BY a.attd_date DESC
+
+    </select>
+
+    <!--부서별 근태내역 조회하는 쿼리인데 필요 없을 것 같음-->
+    <select id="findAttendanceByDeptNo" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        e.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail
+
+        FROM attendance a
+        JOIN employee e ON a.emp_id = e.emp_id
+        WHERE e.dept_no = #{deptNo}
+
+    </select>
+
+    <!-- 사원의 금일 근태상태 조회 ( 마이페이지에 사용하기 위함 ) -->
+    <select id="findAttendanceByEmpIdAndCurDate" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON e.position_no = p.position_no
+
+        WHERE
+        a.emp_id = #{ empId } AND
+        a.attd_date = CURDATE()
+
+        ORDER BY a.attd_date DESC
+
+    </select>
+    <!--부서별 금일 근태상태 조회 왜 중복이지??-->
+    <select id="findAttendanceByDeptNoAndCurDate" parameterType="int" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        e.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail
+
+        FROM attendance a
+
+        JOIN employee e ON a.emp_id = e.emp_id
+
+        WHERE
+        e.dept_no = #{deptNo} AND
+        attd_date = CURDATE()
+
+    </select>
+
+    <select id="findAttendanceRequestModify" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON p.position_no = e.position_no
+
+        WHERE a.attd_status IN ('수정 요청중', '비정상')
+
+        ORDER BY attdDate ASC
+
+    </select>
+
+    <!-- scheduler로 모든 사원의 출근 정보를 등록하기 위한 쿼리 -->
+    <select id="findAllEmployee" resultType="EmployeeDto">
+
+        SELECT
+        emp_id empId
+
+        FROM employee
+
+    </select>
+
+    <select id="findAllDepartment" resultType="DepartmentDto">
+
+        SELECT
+        dept_no deptNo,
+        dept_name deptName
+
+        FROM department
+
+    </select>
+
+    <select id="findAllPosition" resultType="PositionDto">
+
+        SELECT
+        position_no positionNo,
+        position_name positionName
+
+        FROM position
+
+    </select>
+
+    <select id="findEmployeesWithAttendanceByToday" resultType="int">
+        SELECT emp_id empId
+        FROM attendance
+        WHERE attd_date = #{ attdDate }
+    </select>
+
+    <select id="findAllEmployeesExceptThoseWithAttendance" resultType="EmployeeDto">
+        SELECT emp_id empId
+        FROM employee
+        WHERE emp_id NOT IN
+        <foreach item="empId" collection="excludedEmpIds" open="(" separator="," close=")">
+            #{ empId }
+        </foreach>
+    </select>
+
+    <select id="findAttendanceByEmpNameAndDeptNo" parameterType="hashmap" resultType="AttendanceDto">
+
+        SELECT
+        a.attd_no attdNo,
+        a.attd_in attdIn,
+        a.attd_out attdOut,
+        a.attd_date attdDate,
+        a.emp_id empId,
+        e.emp_name empName,
+        a.attd_status attdStatus,
+        a.attd_detail attdDetail,
+        e.dept_no deptNo,
+        p.position_name positionName
+
+        FROM attendance a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        INNER JOIN position p ON e.position_no = p.position_no
+
+        WHERE
+        e.dept_no = #{ deptNo }
+        AND e.emp_name LIKE CONCAT('%', #{empName}, '%')
+        AND attd_date = CURDATE()
+
+        ORDER BY e.position_no DESC
+
+    </select>
+
+    <select id="findAllEmployeeInfo" resultType="EmployeeDto">
+
+        SELECT
+        e.emp_id empId,
+        e.emp_name empName,
+        e.emp_email empEmail,
+        e.dept_no deptNo,
+        d.dept_name deptName,
+        e.position_no positionNo,
+        p.position_name positionName
+        FROM
+        employee e
+        INNER JOIN
+        department d ON e.dept_no = d.dept_no
+        INNER JOIN
+        position p ON p.position_no = e.position_no
+
+    </select>
+
+
+</mapper>

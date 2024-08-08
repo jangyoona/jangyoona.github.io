@@ -1,0 +1,118 @@
+@Data
+public class SearchOptionDto {
+	
+	private boolean isSearch;
+	private String searchType;
+	private String searchWord;
+	
+	private int from;
+	private int count;
+	private int to;
+
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	<sql id="searchCondition">
+		<where>
+			<if test="isSearch==true">
+				<choose>
+					<when test="searchType == 'title'.toString()">
+						title LIKE '%' || #{ searchWord } || '%'
+					</when>
+					<when test="searchType == 'content'.toString()">
+						title LIKE '%' || #{ searchWord } || '%'
+					</when>
+					<when test="searchType == 'writer'.toString()">
+						title LIKE '%' || #{ searchWord } || '%'
+					</when>
+					<when test="searchType == 'all'.toString()">
+						( title LIKE '%' || #{ searchWord } || '%' ) OR ( content  '%' || #{ searchWord } || '%' ) OR ( writer LIKE'%' || #{ searchWord } || '%' )
+					</when>
+				</choose>		
+			</if>
+		</where>		
+	</sql>
+
+	<select id="selectBoardCountWithSearch" resultType="int" parameterType="SearchOptionDto">
+		SELECT COUNT(*) 
+		FROM board
+		<include refid="searchCondition" />				
+	</select>
+	<select id="selectBoardByRangeWithSearch" parameterType="SearchOptionDto" resultType="BoardDto">		
+		SELECT *
+		FROM
+		(
+			SELECT ROWNUM idx, a.*
+			FROM
+			(
+				SELECT boardno, title, writer, readcount, writedate, modifydate, deleted
+				FROM board
+				<include refid="searchCondition" />
+				ORDER BY boardno DESC				
+			) a
+			WHERE ROWNUM <![CDATA[<]]> #{ to }
+		) b
+		WHERE b.idx >= #{ from }
+	</select>
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	int selectBoardCountWithSearch(SearchOptionDto criteria);
+	List<BoardDto> selectBoardByRangeWithSearch(SearchOptionDto criteria);
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	int getBoardCountWithSearch(SearchOptionDto criteria);
+	List<BoardDto> findBaordByRangeWithSearch(SearchOptionDto criteria);
+
+	@Override
+	public int getBoardCountWithSearch(SearchOptionDto criteria) {
+		return boardMapper.selectBoardCountWithSearch(criteria);
+	}	
+	
+	@Override
+	public List<BoardDto> findBaordByRangeWithSearch(SearchOptionDto criteria) {
+		
+		List<BoardDto> boards = boardMapper.selectBoardByRangeWithSearch(criteria);
+		return boards;
+		
+	}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	@GetMapping(path = {"/list-with-search"})
+	public String listRangeWithSearch(@RequestParam(name="pageNo", defaultValue = "1") int pageNo,
+			SearchOptionDto criteria, HttpServletRequest req, Model model) {
+		
+		criteria.setSearch(true);
+		criteria.setSearchType("title");
+		criteria.setSearchWord("테스트");
+		
+		
+		int pageSize = 3; 		// 한 페이지에 표시하는 데이터 갯수
+		int pagerSize = 3;		// 한 번에 표시되는 페이지 번호 갯수
+		// int dataCount = boardService.getBoardCount();	// 전체 데이터 갯수
+		int dataCount = boardService.getBoardCountWithSearch(criteria);	// 전체 데이터 갯수
+		String uri = req.getRequestURI();
+		String linkUrl = uri.substring(uri.lastIndexOf("/") + 1); // 페이지 번호를 클릭했을 때 요청을 보낼 URL ( 목록 페이지 경로 )
+		String queryString = req.getQueryString();
+		
+		int start = pageSize * (pageNo - 1) + 1; // 현재 페이지의 첫번째 데이터 행 번호
+		
+		// ThePager pager = new ThePager(dataCount, page, pageSize, pagerSize, linkUrl);
+		ThePager pager = new ThePager(dataCount, pageNo, pageSize, pagerSize, linkUrl, queryString);
+		
+		criteria.setFrom(start);
+		criteria.setCount(pageSize);
+		criteria.setTo(start + pageSize);		
+		List<BoardDto> boards = boardService.findBaordByRangeWithSearch(criteria);		
+
+		model.addAttribute("boardList", boards); // Model 타입 전달인자에 데이터 저장 -> View(JSP)로 전달
+		model.addAttribute("pager", pager);
+		model.addAttribute("pageNo", pageNo);
+		
+		return "board/list"; 	// /WEB-INF/views/ + board/list + .jsp
+	}
+
+

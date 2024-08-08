@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approval-Write</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    <!-- summernote -->
+    <link rel="stylesheet" href="../../plugins/summernote/summernote-bs4.min.css">
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="../../plugins/codemirror/codemirror.css">
+    <link rel="stylesheet" href="../../plugins/codemirror/theme/monokai.css">
+    <!-- SimpleMDE -->
+    <!--  <link rel="stylesheet" href="../../plugins/simplemde/simplemde.min.css">-->
+
+    <style>
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        th, td {
+          border: 1px solid black;
+          padding: 8px;
+          text-align: center;
+        }
+        th {
+          border: 2px solid black;
+          background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!--end Main Sidebar Container -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>전자 결재 | 상세보기</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active"><a href="#">전자 결재</a></li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <br>
+            <div class="row">
+                <br>
+                <div class="col-md-12">
+                    <br>
+                    <div class="card card-outline card-info">
+                        <br>
+                        <button type="button" class="btn btn-block btn-dark" id="go-back-btn">뒤로가기</button>
+                        <button type="button" class="btn btn-block bg-gradient-warning btn-print">인쇄하기</button>
+                        <hr>
+                        <div id="printableArea">
+                            <table>
+                                <tr>
+                                    <th>문서번호</th>
+                                    <td colspan="3" th:text="${approvalDocument.approvalDocumentNo}"></td>
+                                </tr>
+                                <tr>
+                                    <th>기안자</th>
+                                    <td th:text="${approvalDocument.empName}"></td>
+                                </tr>
+                                <tr>
+                                    <th>처리</th>
+                                    <td colspan="3">
+                                        <table style="width: 100%; border: none;">
+                                            <tr>
+                                                <td th:each="approver : ${approvers}" style="border: none;" th:text="${ approver.positionName } + ' - ' + ${ approver.empName} + ' - ' + ${ approver.approvalActive } ">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>제목</th>
+                                    <td colspan="3" th:text="${approvalDocument.approvalTitle}"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="1">내용</td>
+                                    <td colspan="3">
+                                        <div class="card-body">
+                                            <label for="summernote"></label>
+                                            <div id="summernote" name="approvalContent" th:utext="${approvalDocument.approvalContent}"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.col-->
+            </div>
+            <!-- ./row -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- Summernote -->
+<script src="../../plugins/summernote/summernote-bs4.min.js"></script>
+<!-- CodeMirror -->
+<script src="../../plugins/codemirror/codemirror.js"></script>
+<script src="../../plugins/codemirror/mode/css/css.js"></script>
+<script src="../../plugins/codemirror/mode/xml/xml.js"></script>
+<script src="../../plugins/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+
+<script type="text/javascript" th:inline="javascript">
+    $(function () {
+       $('#cancel-btn').on('click', function(event) {
+          if(confirm("상신 취소하시겠습니까?")){
+                alert("정상적으로 처리되었습니다.");
+                 location.href = /*[(|'approval-delete/${approvalDocument.approvalDocumentNo}'|)]*/ '';
+            }
+       });
+
+       $('#go-back-btn').on('click', function(event) {
+          location.href = 'approval-list';
+       });
+
+       // 현재 페이지의 URL을 가져옵니다.
+        const currentUrl = window.location.href;
+        let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+        const pathIndex = currentPath.indexOf("?");
+        if (pathIndex != -1 ) {
+            currentPath = currentPath.substring(0, pathIndex);
+        }
+        // 현재 페이지의 URL과 sidebar의 URL을 비교
+        $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+        $('.btn-print').on('click', function() {
+            // 인쇄할 영역 선택
+            var printContents = document.getElementById('printableArea').innerHTML;
+            var originalContents = document.body.innerHTML;
+            // 인쇄할 내용으로 변경
+            document.body.innerHTML = printContents;
+            // 인쇄 대화상자 열기
+            window.print();
+            // 원래 내용으로 복원
+            document.body.innerHTML = originalContents;
+            location.reload(); // 페이지를 새로 고쳐서 스크립트가 다시 로드되도록 함
+        });
+   });
+</script>
+</body>
+</html>

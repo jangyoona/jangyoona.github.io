@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>공지사항 상세</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>공지사항</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Board</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <div class="container">
+        <div>
+          <!-- /.col -->
+          <div>
+            <div class="card card-primary card-outline">
+
+              <!-- /.card-header -->
+              <div class="card-body p-0 " id="printableArea">
+                <br>
+                <div class="card-header text-center">
+
+                  <h4 th:text="${ board.boardTitle }"></h4>
+                  <div>
+                  <button type="button" class="btn btn-default btn-sm btn-print float-right" title="Print">
+                    <i class="fas fa-print"></i>
+                  </button>
+                  <span class="float-right" th:text="'작성자: '+${board.empPosition}+'-'+${board.empName}"></span>
+                  <br>
+                  <span class="boardbox-read-time float-right" th:text="${ #dates.format(board.boardWriteDate, 'yyyy-MM-dd hh:mm') }"></span>
+                  </div>
+                </div>
+                <br>
+                <!-- /.boardbox-read-info -->
+                <div class="boardbox-read-message">
+                  <p th:utext="${ board.boardContent }"></p>
+                </div>
+                <!-- /.boardbox-read-message -->
+              </div>
+              <!-- /.card-body -->
+              <div class="card-header bg-white">
+                <ul class="boardbox-attachments d-flex align-items-stretch clearfix">
+                  <ul>
+                    <li th:each="attach : ${board.attachments}" th:if="${board.boardUserFileName} != null">
+                      <div class="boardbox-attachment-info">
+                        <a th:href="@{download(attachno=${attach.boardAttachNo})}"
+                           onclick="redirectAfterDownload(${board.boardlNo});"
+                           th:text="${attach.boardUserFileName}"
+                           class="boardbox-attachment-name"></a>
+                        <a th:href="@{download(attachno=${attach.boardAttachNo})}"
+                           onclick="redirectAfterDownload(${board.boardNo});"
+                           class="btn btn-default btn-sm float-right">
+                          <i class="fas fa-cloud-download-alt"></i>
+                        </a>
+                      </div>
+                    </li>
+                  </ul>
+
+                </ul>
+              </div>
+              <!-- /.card-footer -->
+              <div class="card-footer bg-white">
+                <ul class="mailbox-attachments d-flex align-items-stretch clearfix">
+                  <ul>
+                    <li th:each="attach : ${board.attachments}" th:if="${attach} != null">
+                      <div class="mailbox-attachment-info">
+                        <a th:href="@{download(attachno=${attach.boardAttachNo})}"
+                           onclick="redirectAfterDownload(${board.boardNo});"
+                           th:text="${attach.boardUserFileName}"
+                           class="mailbox-attachment-name"></a>
+                        <a th:href="@{download(attachno=${attach.boardAttachNo})}"
+                           onclick="redirectAfterDownload(${board.boardNo});"
+                           class="btn btn-default btn-sm float-right">
+                          <i class="fas fa-cloud-download-alt"></i>
+                        </a>
+                      </div>
+                    </li>
+                  </ul>
+                </ul>
+              </div>
+              <div class="card-footer">
+                <div class="float-right">
+                  <h5 class="card-title">
+                    <a th:href="@{/board/list}" class="btn btn-primary btn-block mb-3">공지사항 목록</a>
+                  </h5>
+                </div>
+                <button type="button" class="btn btn-default btn-print"><i class="fas fa-print"></i> 출력</button>
+                <th:if th:if="${#ctx.session.loginUser.empId == board.empId}">
+                <button type="button" class="btn btn-default btn-edit"><i class="fas fa-edit"></i> 수정</button>
+                <button type="button" class="btn btn-default btn-delete"
+                        th:data-empid="${board.empId}"
+                        th:data-boardno="${board.boardNo}">
+                  <i class="fas fa-print"></i> 삭제
+                </button>
+                </th:if>
+              </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- 수정 모달창 추가 -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">글 수정</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm" th:action="@{/board/update}" method="post">
+          <input type="hidden" id="boardNo" name="boardNo" th:value="${board.boardNo}">
+          <input type="hidden" id="empId" name="empId" th:value="${board.empId}">
+
+          <div class="form-group">
+            <label for="editTitle">제목</label>
+            <input type="text" class="form-control" id="editTitle" name="boardTitle" th:value="${board.boardTitle}">
+          </div>
+          <div class="form-group">
+            <label for="editContent">내용</label>
+            <textarea class="form-control" id="editContent" name="boardContent" rows="3" th:text="${board.boardContent}"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-primary btn-modaledit">수정</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script th:inline="javascript">
+  $(function () {
+
+    // 서버에서 전달한 alert 메시지를 확인하는 방법
+        var alertMessage = /*[[${alertMessage}]]*/ null; // Thymeleaf를 사용하여 메시지를 가져옴
+
+        // alert 메시지가 존재하면 띄우기
+        if (alertMessage) {
+            alert(alertMessage);
+            // 메시지를 사용한 후 세션에서 제거
+
+        }
+
+    // 현재 페이지의 URL을 가져옵니다.
+    const currentUrl = window.location.href;
+    let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+    const pathIndex = currentPath.indexOf("?");
+    if (pathIndex != -1) {
+      currentPath = currentPath.substring(0, pathIndex);
+    }
+    // 현재 페이지의 URL과 sidebar의 URL을 비교
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    $('.btn-print').on('click', function() {
+        // 인쇄할 영역 선택
+        var printContents = document.getElementById('printableArea').innerHTML;
+        var originalContents = document.body.innerHTML;
+        // 인쇄할 내용으로 변경
+        document.body.innerHTML = printContents;
+        // 인쇄 대화상자 열기
+        window.print();
+        // 원래 내용으로 복원
+        document.body.innerHTML = originalContents;
+        location.reload(); // 페이지를 새로 고쳐서 스크립트가 다시 로드되도록 함
+    });
+     function redirectAfterDownload(attachno) {
+        setTimeout(() => {
+            window.location.href = '/board/detail?attachno=' + attachno;
+        }, 1000);
+    }
+
+    $('.btn-delete').click(function() {
+    // 데이터 속성에서 empId와 boardNo 가져오기
+    var empId = $(this).data('empid');
+    var boardNo = $(this).data('boardno');
+
+      // 삭제 확인
+      if (confirm('정말로 삭제하시겠습니까?')) {
+          // AJAX 요청 보내기
+          $.ajax({
+              type: 'POST',
+              url: '/board/delete', // 삭제 요청을 처리할 URL
+              data: {
+                empId: empId,
+                boardNo: boardNo
+              },
+              success: function(response) {
+                // 삭제 성공 시 /board/list로 이동
+                alert('삭제 성공');
+                window.location.href = '/board/list'; // /board/list로 이동
+              },
+              error: function(xhr, status, error) {
+                // 삭제 실패 시 에러 처리
+                alert('삭제에 실패했습니다.');
+              }
+          });
+      }
+    });
+
+    // 수정 버튼 클릭 이벤트 핸들러
+    $('.btn-edit').click(function() {
+      // 모달창 열기
+      $('#editModal').modal('show');
+
+      // 모달창에 현재 내용 채우기
+      $('#editTitle').val($('.card-header h4').text());
+      $('#editContent').val($('.boardbox-read-message p').text());
+    });
+
+    $('.btn-modaledit').click(function() {
+      // 폼 데이터 가져오기
+      var formData = $('#editForm').serialize();
+
+      // AJAX 요청 보내기
+        $.ajax({
+            type: 'POST',
+            url: $('#editForm').attr('action'), // 폼의 action 속성을 사용
+            data: formData,
+            success: function(response) {
+                // 수정 성공 시 화면 갱신
+                $('#editModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                // 수정 실패 시 에러 처리
+                alert('수정에 실패했습니다.');
+            }
+        });
+    });
+
+
+    empId = /*[[${session.loginUser.empId}]]*/ 0;
+    initializeWebSocket(empId);
+
+  });
+</script>
+</body>
+</html>

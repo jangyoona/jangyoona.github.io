@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>프로젝트 관리</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Bootstrap Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- fullCalendar -->
+    <link rel="stylesheet" href="/plugins/fullcalendar/main.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+
+    <link rel="stylesheet" href="/dist/project-list/calendar.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Main content -->
+        <div class="calendar-container">
+            <div class="calendar-header-container">
+                <div class="form-group">
+                    <label for="exampleFormControlSelect1">부서 목록</label>
+                    <select class="form-control dept-select" id="exampleFormControlSelect1">
+                        <option th:each="dept, deptState : ${depts}" th:data-idx="${deptState.index}"
+                                th:text="${dept.deptName}" th:value="${dept.deptNo}"
+                                class="dept-item"></option>
+                    </select>
+                </div>
+                <h2>Project Calendar</h2>
+                <div class="status-bar-container">
+                    <span class="ing">진행중</span>
+                    <span class="complete">완료</span>
+                    <span class="planing">계획중</span>
+                </div>
+            </div>
+            <!-- THE CALENDAR -->
+            <div id="project-calendar"></div>
+            <button class="btn btn-primary" id="write-project">
+                프로젝트 등록하기
+            </button>
+        </div>
+        <!-- /.content -->
+
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<!-- Modal 창 -->
+<div class="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="padding-bottom: 1rem; border-bottom: 1px solid lightgray;">
+                    기간 : <span class="modal-start"></span> ~ <span class="modal-end"></span>
+                </div>
+                <p class="modal-body-content" style="padding-top: 1rem;"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                <a class="btn btn-primary link-button" style="text-decoration: none;">자세히 보러가기</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal 창 -->
+
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery UI -->
+<script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- fullCalendar 2.2.5 -->
+<script src="/plugins/moment/moment.min.js"></script>
+<script src="/plugins/fullcalendar/main.js"></script>
+<script src="/plugins/fullcalendar/locales/ko.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<!-- Page specific script -->
+<script th:inline="javascript">
+$(function () {
+
+    const currentPath = '/schedule/list'
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    // JS DATE FORMAT FUNCTION
+    function formatDate(date) {
+        let d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    const deptNo = /*[[${ #ctx.param.deptNo }]]*/
+    for (let i = 0; i < $('.dept-item').length; i++) {
+        if ($('.dept-item').eq(i).val() == deptNo) {
+            $('.dept-item').eq(i).attr('selected', 'selected');
+        }
+    }
+
+    $('.dept-select').on('change', function(e){
+        location.href = 'project-calendar?deptNo=' + $('.dept-select').val();
+    });
+
+    const Calendar = FullCalendar.Calendar;
+    const calendarEl = document.getElementById('project-calendar');
+
+    let serverArr = /*[[${ projects }]]*/
+    let eventArr = [];
+
+    for (let i = 0; i < serverArr.length; i++) {
+        let calendarColor = '';
+        if (serverArr[i].scheduleStatus == '진행중') {
+            calendarColor = '#ffd814';
+        } else if (serverArr[i].scheduleStatus == '완료') {
+            calendarColor = '#16e031';
+        } else if (serverArr[i].scheduleStatus == '계획중') {
+            calendarColor = '#16c2e0';
+        }
+
+        const obj =
+        {
+            id: serverArr[i].scheduleNo
+            , title: serverArr[i].scheduleTitle
+            , start: serverArr[i].scheduleStartDate.substring(0, 16)
+            , end: serverArr[i].scheduleEndDate.substring(0, 16)
+            , content : serverArr[i].scheduleContent
+            , color: calendarColor
+            , textColor: 'black'
+            , borderColor: '#1f003d'
+            , allDay : true
+        }
+
+        eventArr.push(obj);
+    }
+
+
+    let calendar = new Calendar(calendarEl, {
+      locale: 'ko',
+      headerToolbar: {
+        left : 'today',
+        center: 'title',
+        right  : 'prevYear,prev,next,nextYear'
+      },
+      themeSystem: 'bootstrap',
+      contentHeight:"auto",
+      handleWindowResize:true,
+      events: eventArr,
+      editable  : false,
+      droppable : false,
+      eventClick : function(info) {
+        $('.modal-title').text(info.event.title);
+        const formatStart = formatDate(info.event.start);
+        const formatEnd = formatDate(info.event.end);
+        $('.modal-start').text(formatStart);
+        $('.modal-end').text(formatEnd);
+        $('.modal-body-content').text(info.event.extendedProps.content);
+        $('.link-button').attr('href', `project-detail?projectNo=${info.event.id}`);
+        $('.modal').modal('show');
+      }
+    });
+
+    calendar.render();
+
+    $('#write-project').on('click', function(e) {
+        location.href = "write-project";
+    });
+
+    empId = /*[[${session.loginUser.empId}]]*/ 0;initializeWebSocket(empId);
+});
+</script>
+
+</body>
+</html>

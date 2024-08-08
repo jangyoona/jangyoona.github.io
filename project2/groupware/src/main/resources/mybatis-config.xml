@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration
+		PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<typeAliases>
+		<typeAlias type="com.groupware.dto.EmployeeDto" alias="EmployeeDto" />
+		<typeAlias type="com.groupware.dto.ProjectDto" alias="ProjectDto" />
+		<typeAlias type="com.groupware.dto.DepartmentDto" alias="DepartmentDto" />
+		<typeAlias type="com.groupware.dto.EmployeeDetailDto" alias="EmployeeDetailDto" />
+		<typeAlias type="com.groupware.dto.ApprovalFormDto" alias="ApprovalFormDto" />
+		<typeAlias type="com.groupware.dto.ApprovalDto" alias="ApprovalDto" />
+		<typeAlias type="com.groupware.dto.ApproverDto" alias="ApproverDto" />
+		<typeAlias type="com.groupware.dto.MailAttachDto" alias="MailAttachDto" />
+		<typeAlias type="com.groupware.dto.MailDto" alias="MailDto" />
+		<typeAlias type="com.groupware.dto.Mail" alias="Mail" />
+		<typeAlias type="com.groupware.dto.MailListDto" alias="MailListDto" />
+		<typeAlias type="com.groupware.dto.UserScheduleDto" alias="UserScheduleDto" />
+		<typeAlias type="com.groupware.dto.ProjectBoardDto" alias="ProjectBoardDto" />
+		<typeAlias type="com.groupware.dto.ProjectUserScheduleDto" alias="ProjectUserScheduleDto" />
+		<typeAlias type="com.groupware.loginAttempt.LoginAttemptDto" alias="LoginAttemptDto" />
+		<typeAlias type="com.groupware.dto.UserFileBoxDto" alias="UserFileBoxDto" />
+		<typeAlias type="com.groupware.dto.UserBookmarkDto" alias="UserBookmarkDto" />
+		<typeAlias type="com.groupware.dto.NotificationDto" alias="NotificationDto" />
+		<typeAlias type="com.groupware.dto.BoardDto" alias="BoardDto" />
+		<typeAlias type="com.groupware.dto.BoardAttachDto" alias="BoardAttachDto" />
+		<!--<typeAlias type="com.groupware.dto." alias="" />
+		<typeAlias type="com.groupware.dto." alias="" />
+		-->
+
+		<!-- Attendance Dto-->
+		<typeAlias type="com.groupware.dto.AttendanceDto" alias="AttendanceDto" />
+		<typeAlias type="com.groupware.dto.AnnualDto" alias="AnnualDto" />
+		<typeAlias type="com.groupware.dto.PositionDto" alias="PositionDto" />
+		<typeAlias type="com.groupware.dto.CalendarDto" alias="CalendarDto" />
+		<typeAlias type="com.groupware.dto.CalendarEventDto" alias="CalendarEventDto" />
+		<typeAlias type="com.groupware.dto.MinigameDto" alias="MinigameDto" />
+		<typeAlias type="com.groupware.dto.EmployeeAttachDto" alias="EmployeeAttachDto" />
+
+
+	</typeAliases>
+
+	<mappers>
+		<mapper resource="com/groupware/mapper/AccountMapper.xml" />
+		<mapper resource="com/groupware/mapper/ApprovalMapper.xml" />
+		<mapper resource="com/groupware/mapper/AttdMapper.xml" />
+		<mapper resource="com/groupware/mapper/ProjectMapper.xml" />
+		<mapper resource="com/groupware/mapper/MailMapper.xml" />
+		<mapper resource="com/groupware/mapper/MyPageMapper.xml" />
+		<mapper resource="com/groupware/mapper/LoginAttemptMapper.xml" />
+		<mapper resource="com/groupware/mapper/HrMapper.xml" />
+		<mapper resource="com/groupware/mapper/CalendarMapper.xml" />
+		<mapper resource="com/groupware/mapper/NotificationMapper.xml" />
+		<mapper resource="com/groupware/mapper/BoardMapper.xml" />
+	</mappers>
+
+</configuration>

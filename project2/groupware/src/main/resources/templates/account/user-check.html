@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>아이디 확인</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <style>
+    .login-box {
+      position: absolute;
+      top: 40%;
+      left: 49%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-rows: 100px 1fr;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="hold-transition login-page">
+
+<div class="login-box">
+  <div class="login-logo">
+    <p><b style="font-size:25px;">이메일인증</b></p>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card" style="width:400px">
+    <div class="card-body login-card-body" style="width:400px">
+      <p class="login-box-msg"></p>
+
+      <form id="user-check-form" action="/account/email-message" method="post">
+        <div class="row" style="width:100%; position:relative; left:8px;">
+            <input type="text" class="form-control" name="empId" id="empId"  placeholder="가입한 아이디를 입력하세요" minlength="8" maxlength="8" required
+                   onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" style="margin-bottom:20px;">
+            <button type="submit" class="btn btn-primary btn-block" id="id-check-btn" style="width:60px; position:absolute; right: 0px;">확인</button>
+<!--          <div id="message">인증번호 입력하셈</div>-->
+        </div>
+        <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 98% !important;"/>
+        <div class="row">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">이메일 발송</button>
+            <button type="button" class="btn btn-light btn-block" id="cancel-btn">취소</button><br>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+      <a href="/account/login" style="position:relative; right:43%">로그인</a>
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+  $(function() {
+      // getAjax 함수
+      function getAjax(url, data, dataType = "text") {
+          return new Promise((resolve, reject) => {
+              $.ajax({
+                  url : url,
+                  method : 'get',
+                  data : data,
+                  dataType : "text",
+                  success : function(result){
+                      resolve(result);
+                  },
+                  error : function(xhr, status, error) {
+                      reject(err);
+                  }
+              });
+          });
+      }
+
+      $('#empId').focus();
+
+      // 아이디 체크 했는지 확인
+      let isIdCheck = false;
+
+      $('#id-check-btn').on('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const id = $('#empId').val();
+
+            if(id == '') {
+                alert('아이디를 입력해 주세요');
+                $('#empId').focus();
+                return;
+            } else if(id.length < 8) {
+                alert('아이디 8자리를 입력해 주세요');
+                $('#empId').focus();
+                return;
+            }
+
+            getAjax('id-check', { empId : id })
+                .then(result => {
+                    if(result === "true") {
+                        alert('확인되었습니다.');
+                        $('#empId').attr('readonly', true);
+                        isIdCheck = 'true';
+                      } else {
+                        alert('존재하지 않은 아이디입니다');
+                        $('#empId').val('');
+                        $('#empId').focus();
+                      }
+
+                })
+                .catch(err => {
+                    alert('아이디 확인 후 진행 가능합니다');
+                });
+      });
+
+      $('#submit-btn').on('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const id = $('#empId').val();
+
+            if(isIdCheck === false) {
+                alert('아이디 확인을 진행해 주세요');
+                $('#empId').focus();
+             } else {
+                getAjax('email-message', { empId : id })
+                    .then(result => {
+                        location.href='email-check?empId=' + id;
+                    })
+                    .catch(err => {
+                        alert('실행 도중 오류가 발생하였습니다')
+                    });
+            }
+
+
+      });
+
+      $('#cancel-btn').on('click', () => {
+            history.back();
+      });
+
+  });
+
+
+</script>
+
+
+</body>
+</html>

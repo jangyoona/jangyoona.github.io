@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdminLTE 3 | Blank Page</title>
+
+    <!-- jQuery -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>근태 조회</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/home">Home</a></li>
+                            <li class="breadcrumb-item active">근태 조회</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <!-- Default box -->
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">근태 수정 요청 관리</h3>
+                                    <div class="card-tools">
+                                        <div class="input-group input-group-sm" style="width: 150px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-body table-responsive p-0" style="height: 300px;">
+                                    <table class="table table-head-fixed text-nowrap">
+                                        <colgroup>
+                                            <col style="width: 7%;">
+                                            <col style="width: 11%;">
+                                            <col style="width: 15%;">
+                                            <col style="width: 15%;">
+                                            <col style="width: 15%;">
+                                            <col style="width: 7%;">
+                                            <col style="width: 30%;">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>사번</th>
+                                            <th>사원 이름</th>
+                                            <th>날짜</th>
+                                            <th>출근 시간</th>
+                                            <th>퇴근 시간</th>
+                                            <th>상태</th>
+                                            <th>사유</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="allAttendance : ${allAttendance}" style="height:30px">
+                                            <td th:text="${allAttendance.empId}"></td>
+                                            <td th:text="${allAttendance.empName}"></td>
+                                            <td th:text="${#dates.format(allAttendance.attdDate, 'yyyy-MM-dd')}"></td>
+                                            <td th:text="${#dates.format(allAttendance.attdIn, 'HH:mm:ss')}"></td>
+                                            <td>
+                                                <span th:if="${#dates.format(allAttendance.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="|[퇴근 미등록]|"></span>
+                                                <span th:unless="${#dates.format(allAttendance.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="${#dates.format(allAttendance.attdOut, 'HH:mm:ss')}"></span>
+                                            </td>
+                                            <td th:text="${allAttendance.attdStatus}"></td>
+                                            <td th:text="${allAttendance.attdDetail}"></td>
+                                            <td>
+                                                <button type="button" class="btn btn-primary attendance-edit-button" data-toggle="modal" data-target="#modal-default">
+                                                    근태 수정
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <!-- 기존 tr 태그 -->
+                                        <!-- 추가된 모달 코드 위치 변경 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">수정사항 입력</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" class="form-control" id="empId" name="empId">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">출퇴근 일자</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDate" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">--출근 등록 정보--</label>
+                            <label style="text-align: center; display: block; width: 100%;">사원 이름</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="empName" style="text-align: center;font-weight: bold;" disabled>
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">출근 시간</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="time" class="form-control" id="attdIn" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">퇴근 시간</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="datetime-local" class="form-control" id="attdOut" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                            <label style="text-align: center; display: block; width: 100%;">상태</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdStatus" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDetail" placeholder="비고" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="modifyButton" data-dismiss="modal">수정</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+    // '근태 수정' 버튼 클릭 시 이벤트 핸들러
+    $(document).on('click', '.attendance-edit-button', function() {
+        // 버튼이 속한 행의 데이터를 가져옵니다.
+        var row = $(this).closest('tr');
+        var empId = row.find('td').eq(0).text();
+        var empName = row.find('td').eq(1).text();
+        var attdDate = row.find('td').eq(2).text();
+        var attdIn = row.find('td').eq(3).text();
+        var attdOut = row.find('td').eq(4).text();
+        var attdStatus = row.find('td').eq(5).text();
+        var attdDetail = row.find('td').eq(6).text();
+
+        // 모달의 input 필드에 데이터를 설정합니다.
+        $('#empId').val(empId);
+        $('#empName').val(empName);
+        $('#attdDate').val(attdDate);
+        $('#attdIn').val(attdIn);
+        $('#attdOut').val(attdOut);
+        $('#attdStatus').val(attdStatus);
+        $('#attdDetail').val(attdDetail);
+
+        // 모달을 엽니다.
+        $('#modal-default').modal('show');
+    });
+
+    $('#modifyButton').on('click', function() {
+        // 오늘 날짜 (출퇴근 날짜)
+        var attdDate = $('#attdDate').val().trim();
+        var attdIn = $('#attdIn').val().trim();
+        var attdOut = $('#attdOut').val().trim();
+        var empId = $('#empId').val();
+        var empName = $('#empName').val();
+        var attdStatus = $('#attdStatus').val();
+        // 사유
+        var attdDetail = $('#attdDetail').val();
+
+        function formatDateTime(datetime) {
+            var date = new Date(datetime);
+            var year = date.getFullYear();
+            var month = ('0' + (date.getMonth() + 1)).slice(-2);
+            var day = ('0' + date.getDate()).slice(-2);
+            var hours = ('0' + date.getHours()).slice(-2);
+            var minutes = ('0' + date.getMinutes()).slice(-2);
+            var seconds = ('0' + date.getSeconds()).slice(-2);
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // 데이터 전송
+        var data = {
+            attdDateStr: attdDate,
+            attdInStr: attdDate + " " + attdIn,
+            attdOutStr: formatDateTime(attdOut),
+            empId: empId,
+            empName: empName,
+            attdStatus: attdStatus,
+            attdDetail: attdDetail
+        };
+
+        console.log("Sending data:", data); // 전송 데이터 로그 확인
+
+        // AJAX 요청
+        $.ajax({
+            type: 'POST',
+            url: '/pages/attendance/attendance-edit',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'text',
+            success: function(response, status, xhr) {
+                console.log('AJAX 성공:', response);
+                window.alert('근태 수정 완료');
+                $('#modal-default').modal('hide');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.log('AJAX 오류:', error);
+            }
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>

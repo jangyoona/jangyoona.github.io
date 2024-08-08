@@ -1,0 +1,152 @@
+﻿<!-- /.col -->
+    <div class="card card-primary card-outline" xmlns:th="http://www.thymeleaf.org">
+        <div class="card-header">
+            <h3 class="card-title" th:if="${currentType == 'all'}">전체메일</h3>
+            <h3 class="card-title" th:if="${currentType == 'received'}">받은메일함</h3>
+            <h3 class="card-title" th:if="${currentType == 'sent'}">보낸메일함</h3>
+            <h3 class="card-title" th:if="${currentType == 'tome'}">내게쓴메일함</h3>
+            <h3 class="card-title" th:if="${currentType == 'important'}">중요메일</h3>
+            <h3 class="card-title" th:if="${currentType == 'deleted'}">휴지통</h3>
+            <div class="card-tools">
+                <div class="input-group input-group-sm">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search Mail">
+                    <div class="input-group-append">
+                        <div class="btn btn-primary">
+                            <i class="fas fa-search btn-search"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-tools -->
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body p-0">
+            <div class="mailbox-controls">
+                <!-- Check all button -->
+                <button type="button" class="btn btn-default btn-sm checkbox-toggle"><i class="far fa-square"></i>
+                </button>
+                <div class="btn-group" th:if="${currentType != 'deleted'}">
+                    <button type="button" class="btn btn-default btn-sm btn-redirect" data-container="body" title="REDIRECT">
+                        <i class="fa fa-paper-plane"></i> 답장
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-mark" data-container="body" title="LIKE">
+                        <i class="fa fa-star"></i> 중요메일
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-remove-mark" data-container="body" title="UNLIKE">
+                        <i class="fa fa-ban"></i> 중요메일 취소
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-delete" data-container="body" title="Delete">
+                        <i class="far fa-trash-alt"></i> 삭제
+                    </button>
+                </div>
+
+                <div class="btn-group" th:if="${currentType == 'deleted'}">
+                    <button type="button" class="btn btn-default btn-sm btn-redirect" data-container="body" title="Redirect">
+                        <i class="fa fa-paper-plane"></i> 답장
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-realDelete" data-container="body" title="Delete">
+                        <i class="far fa-trash-alt"></i> 삭제
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-deleteCancel" data-container="body" title="Delete">
+                        <i class="fa fa-ban"></i> 삭제 취소
+                    </button>
+                </div>
+
+                <!-- /.btn-group -->
+                <button type="button" class="btn btn-default btn-sm refreshEmail" >
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <div class="float-right">
+                    [(${ pager })]
+                </div>
+                <!-- /.float-right -->
+            </div>
+            <div class="table-responsive mailbox-messages">
+                <table class="table table-hover table-striped">
+                    <tbody id="mail-list" th:each="mail, iterStat : ${mailList}"
+                           th:class="${(mail.emailFromRead == false AND #ctx.session.loginUser.empEmail == mail.emailFrom) OR
+                                     (mail.emailToRead == false AND #ctx.session.loginUser.empEmail == mail.emailTo) ? 'unread' : ''}"  >
+                    <tr id="emailSection">
+                        <td>
+                            <div class="icheck-primary">
+                                <input type="checkbox" th:id="'check' + ${iterStat.index}"
+                                       th:data-email-no="${mail.emailNo}"
+                                       th:data-email-from="${mail.emailFrom}"
+                                       th:data-email-to="${mail.emailTo}">
+                                <label th:for="'check' + ${iterStat.index}"></label>
+                            </div>
+                        </td>
+                        <td class="mailbox-star">
+                            <a href="#">
+                                <i class="" th:class="(${mail.emailFromLike} == false AND ${#ctx.session.loginUser.empEmail == mail.emailFrom}) OR
+                                                        (${mail.emailToLike} == false AND ${#ctx.session.loginUser.empEmail == mail.emailTo}) ?
+                                                        'fas fa-star text-warning' : 'fas fa-star-o text-warning'"></i>
+                            </a>
+                        </td>
+                        <td class="mailbox-empName"><a th:href="@{/mailbox/detail(emailNo=${mail.emailNo}, emailFrom=${mail.emailFrom}, emailTo=${mail.emailTo})}" th:text="${mail.empPosition}+'-'+${mail.empName}"></a></td>
+                        <td class="mailbox-emailFrom"><a th:href="@{/mailbox/detail(emailNo=${mail.emailNo}, emailFrom=${mail.emailFrom}, emailTo=${mail.emailTo})}" th:text="${mail.emailFrom}"></a></td>
+                        <td class="mailbox-emailTitle"><b th:href="@{/mailbox/detail(emailNo=${mail.emailNo}, emailFrom=${mail.emailFrom}, emailTo=${mail.emailTo})}" th:text="${mail.emailTitle}"></b></td>
+                        <td class="mailbox-attachment" style="text-align: right;">
+                            <i th:class="${mail.attachments != null and !#lists.isEmpty(mail.attachments)} ? 'fas fa-paperclip' : ''"></i>
+                        </td>
+                        <td class="mailbox-date" style="text-align: right;"
+                            th:text="${(mail.emailFromActive == 0 AND #ctx.session.loginUser.empEmail == mail.emailFrom) ? mail.emailFromDeleteDate :
+                                       (mail.emailFromDeleteDate == 0 AND #ctx.session.loginUser.empEmail == mail.emailTo) ? mail.emailToDeleteDate :
+                                       '작성일-' + #dates.format(mail.emailWriteDate, 'yyyy-MM-dd hh:mm')}">
+                        </td>
+
+
+                    </tr>
+                    </tbody>
+                </table>
+                <!-- /.table -->
+            </div>
+            <!-- /.mail-box-messages -->
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer p-0" th:if="${#lists.size(mailList) >= 20}">
+            <div class="mailbox-controls">
+                <!-- Check all button -->
+                <button type="button" class="btn btn-default btn-sm checkbox-toggle"><i class="far fa-square"></i>
+                </button>
+                <div class="btn-group" th:if="${currentType != 'deleted'}">
+                    <button type="button" class="btn btn-default btn-sm btn-redirect" data-container="body" title="REDIRECT">
+                        <i class="fa fa-paper-plane"></i> 답장
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-mark" data-container="body" title="LIKE">
+                        <i class="fa fa-star"></i> 중요메일
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-remove-mark" data-container="body" title="UNLIKE">
+                        <i class="fa fa-ban"></i> 중요메일 취소
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-delete" data-container="body" title="Delete">
+                        <i class="far fa-trash-alt"></i> 삭제
+                    </button>
+                </div>
+
+                <div class="btn-group" th:if="${currentType == 'deleted'}">
+                    <button type="button" class="btn btn-default btn-sm btn-redirect" data-container="body" title="Redirect">
+                        <i class="fa fa-paper-plane"></i> 답장
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-realDelete" data-container="body" title="Delete">
+                        <i class="far fa-trash-alt"></i> 삭제
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-deleteCancel" data-container="body" title="Delete">
+                        <i class="fa fa-ban"></i> 삭제 취소
+                    </button>
+                </div>
+                <!-- /.btn-group -->
+                <button type="button" class="btn btn-default btn-sm refreshEmail" >
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <div class="float-right">
+                    [(${ pager })]
+                </div>
+
+                <!-- /.float-right -->
+            </div>
+        </div>
+    </div>
+    <!-- /.card -->
+
+<!-- /.col -->

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.MinigameMapper">
+
+    <insert id="insertMinigameInfo" parameterType="hashmap">
+
+        INSERT INTO minigame(
+            emp_id,
+            score
+        )
+        VALUES (
+            #{ empId },
+            #{ score }
+        )
+
+    </insert>
+
+    <update id="updateMinigameInfo" parameterType="hashmap">
+
+        UPDATE minigame
+
+        SET
+        score = #{ score },
+        attempts = attempts + 1
+
+        WHERE
+        emp_id = #{ empId }
+
+    </update>
+
+    <update id="updateCountOnly" parameterType="int">
+
+        UPDATE minigame
+
+        SET
+        attempts = attempts + 1
+
+        WHERE
+        emp_id = #{ empId }
+
+    </update>
+
+    <select id="findMinigameInfoByEmpId"  resultType="MinigameDto">
+
+        SELECT
+        score,
+        attempts
+
+        FROM minigame
+
+        WHERE emp_id = #{ empId }
+
+    </select>
+
+    <select id="findAllMinigameInfo" resultType="MinigameDto">
+
+        SELECT
+        m.emp_id empId,
+        m.score,
+        m.attempts,
+        e.emp_name empName
+
+        FROM minigame m
+
+        INNER JOIN employee e ON m.emp_id = e.emp_id
+
+        ORDER BY score DESC
+
+        LIMIT 10
+
+    </select>
+
+
+</mapper>

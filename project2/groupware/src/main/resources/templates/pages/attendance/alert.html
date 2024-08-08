@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Unauthorized Access</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-size: 2em; /* Double the base font size */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <script type="text/javascript">
+        function redirectToHome() {
+            var countdown = 5;
+            var countdownElement = document.getElementById('countdown');
+
+            var interval = setInterval(function() {
+                countdownElement.textContent = countdown + "초 후에 홈으로 이동합니다.";
+                countdown--;
+
+                if (countdown < 0) {
+                    clearInterval(interval);
+                    window.location.href = "/home";
+                }
+            }, 1000);
+        }
+    </script>
+</head>
+<body onload="redirectToHome()">
+<div class="container">
+    <h1>제한된 접근</h1>
+    <p>인사 관리자만 접근할 수 있는 페이지입니다.</p>
+    <p id="countdown">5초 후에 홈으로 이동합니다.</p>
+</div>
+</body>
+</html>

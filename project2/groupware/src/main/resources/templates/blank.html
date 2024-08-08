@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+
+    <!-- jQuery -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="/plugins/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Bootstrap Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- fullCalendar -->
+    <link rel="stylesheet" href="/plugins/fullcalendar/main.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">-->
+    <link rel="stylesheet" href="/dist/css/home.css">
+    <style>
+        .container {
+            width: 80%;
+            max-width: 600px;
+
+        }
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 1300px; /* 진행 막대의 최대 너비 설정 */
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress {
+            height: 30px;
+            background-color: #28a745;
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+            background-size: 2rem 2rem;
+            animation: progress-bar-stripes 1s linear infinite;
+            width: 0;
+            transition: width 0.5s ease-in-out;
+            position: relative;
+        }
+        .progress img {
+            height: 35px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 0;
+        }
+        .time-label {
+          font-weight: bold;
+          margin: 0 2px;
+        }
+        @keyframes progress-bar-stripes {
+          from {
+            background-position: 0 0;
+          }
+          to {
+            background-position: 2rem 0;
+          }
+        }
+        #button-container {
+            display: flex;
+            align-items: center;
+        }
+        #after6pm-left, #after6pm-right {
+            display: none;
+            height: 50px;
+            width: 50px;
+            margin: 0 10px;
+        }
+        .calendar-container {
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .main-body-container {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{modules/main-header-navbar}"></div>
+    <div th:replace="~{modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <div class="main-container">
+            <div class="main-header-container">
+                <div class="row" style="justify-self: center; align-self: center;">
+                    <div th:if="${#dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and (todayAttendance.attdStatus == '미출근' or todayAttendance.attdStatus == '휴무')}">
+                        <div th:replace="~{modules/attendance-check-in}"></div>
+                    </div>
+                    <div th:if="${#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00'}">
+                        <div id="button-container">
+                            <img id="after6pm-left" src="../dist/img/alarm.gif" alt="After 6pm Left">
+                            <span th:replace="~{modules/attendance-check-out}"></span>
+                            <img id="after6pm-right" src="../dist/img/alarm.gif" alt="After 6pm Right">
+                        </div>
+                    </div>
+                    <div th:if="${(#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00') or (todayAttendance.attdStatus == '휴가')}">
+                        <div th:replace="~{modules/minigame}"></div>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <span class="time-label">09:00</span>
+                    <span class="progress-bar">
+                        <span id="progress" class="progress">
+                            <img th:if="${currentHour >= 13 && currentHour < 14}" src="../dist/img/lunch.gif" th:src="@{/dist/img/lunch.gif}">
+                            <img th:if="${(currentHour >= 9 && currentHour < 13) || (currentHour >= 14 && currentHour < 18)}" src="../dist/img/running.gif" th:src="@{/dist/img/running.gif}">
+                            <img th:if="${(currentHour >= 6 && currentHour < 9)}" src="../dist/img/check-in.gif" th:src="@{/dist/img/check-in.gif}">
+                            <img th:if="${(currentHour >= 18 && currentHour <= 23) || (currentHour >= 0 && currentHour < 6)}" src="../dist/img/check-out.gif" th:src="@{/dist/img/check-out.gif}">
+                        </span>
+                    </span>
+                    <span class="time-label">18:00</span>
+                </div>
+            </div>
+            <div class="main-body-container">
+                <div class="calendar-container project-calendar-container">
+                    <div class="calendar-header-container">
+                        <h2>프로젝트 캘린더</h2>
+                        <div class="status-bar-container">
+                            <span class="ing">진행중</span>
+                            <span class="complete">완료</span>
+                            <span class="planing">계획중</span>
+                        </div>
+                    </div>
+                    <div id="project-calendar"></div>
+                    <a class="btn btn-primary" href="schedule/list">
+                        프로젝트 보러가기
+                    </a>
+                </div>
+                <div>
+                    <div class="calendar-container personal-calendar-container">
+                        <div class="calendar-header-container">
+                            <h2>개인 캘린더</h2>
+                            <div class="status-bar-container">
+                                <span></span>
+                                <span class="complete">프로젝트 개인</span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div id="personal-calendar"></div>
+                        <a class="btn btn-primary" th:href="@{/myPage/my-page(tab=1)}">
+                            개인일정 보러가기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Modal 창 -->
+        <div class="modal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="padding-bottom: 1rem; border-bottom: 1px solid lightgray;">
+                            기간 : <span class="modal-start"></span> ~ <span class="modal-end"></span>
+                        </div>
+                        <p class="modal-body-content" style="padding-top: 1rem;"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        <a class="btn btn-primary link-button">자세히 보러가기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Project Modal 창 -->
+        <!-- Project 관련 개인 Todo Modal 창 -->
+        <div class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title project-todo-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="padding-bottom: 1rem; border-bottom: 1px solid lightgray;">
+                            프로젝트명 : <span class="project-todo-name"></span>
+                        </p>
+                        <p style="padding-bottom: 1rem; border-bottom: 1px solid lightgray;">
+                            기간 : <span class="project-todo-start"></span> ~ <span class="project-todo-end"></span>
+                        </p>
+                        <p class="project-todo-status"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        <a class="btn btn-primary project-todo-link-button">자세히 보러가기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Project 관련 개인 Modal 창 -->
+
+        <!-- 개인 modal 창 -->
+        <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="eventModalLabel"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="padding-bottom: 1rem; border-bottom: 1px solid lightgray;">
+                            기간 : <span class="modal-start-user"></span> ~ <span class="modal-end-user"></span>
+                        </div>
+                        <p class="modal-content-user" style="padding-top: 1rem;"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        <a type="button" class="btn btn-primary" id="userEvent-btn">자세히 보러가기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /개인 modal 창 -->
+
+
+
+        <!-- Main content -->
+<!--        <section class="content">-->
+<!--            <div class="row" style="justify-content: center;">-->
+<!--                <div th:if="${#dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and (todayAttendance.attdStatus == '미출근' or todayAttendance.attdStatus == '휴무')}">-->
+<!--                    <div th:replace="~{/modules/attendance-check-in}"></div>-->
+<!--                </div>-->
+<!--                <div th:if="${#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00'}">-->
+<!--                    <div id="button-container">-->
+<!--                        <img id="after6pm-left" src="../dist/img/alarm.gif" alt="After 6pm Left">-->
+<!--                        <span th:replace="~{/modules/attendance-check-out}"></span>-->
+<!--                        <img id="after6pm-right" src="../dist/img/alarm.gif" alt="After 6pm Right">-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div th:if="${(#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00') or (todayAttendance.attdStatus == '휴가')}">-->
+<!--                    <div th:replace="~{/modules/attendance-button}"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <hr>-->
+<!--                <div class="progress-bar-container">-->
+<!--                    <span class="time-label">09:00</span>-->
+<!--                    <span class="progress-bar">-->
+<!--                        <span id="progress" class="progress">-->
+<!--                            <img th:if="${currentHour >= 13 && currentHour < 14}" src="../dist/img/lunch.gif" th:src="@{/dist/img/lunch.gif}">-->
+<!--                            <img th:if="${(currentHour >= 9 && currentHour < 13) || (currentHour > 14 && currentHour < 18)}" src="../dist/img/running.gif" th:src="@{/dist/img/running.gif}">-->
+<!--                            <img th:if="${(currentHour >= 6 && currentHour < 9)}" src="../dist/img/check-in.gif" th:src="@{/dist/img/check-in.gif}">-->
+<!--                            <img th:if="${(currentHour >= 18 && currentHour <= 23) || (currentHour >= 0 && currentHour < 6)}" src="../dist/img/check-out.gif" th:src="@{/dist/img/check-out.gif}">-->
+<!--                        </span>-->
+<!--                    </span>-->
+<!--                    <span class="time-label">18:00</span>-->
+<!--                </div>-->
+<!--            <hr>-->
+<!--            <div th:replace="~{/modules/calendar}"></div>-->
+<!--        </section>-->
+        <!--        <section class="content">-->
+        <!--            <div class="row" style="justify-content: center;">-->
+        <!--                <div th:if="${#dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and (todayAttendance.attdStatus == '미출근' or todayAttendance.attdStatus == '휴무')}">-->
+        <!--                    <div th:replace="~{/modules/attendance-check-in}"></div>-->
+        <!--                </div>-->
+        <!--                <div th:if="${#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00'}">-->
+        <!--                    <div id="button-container">-->
+        <!--                        <img id="after6pm-left" src="../dist/img/alarm.gif" alt="After 6pm Left">-->
+        <!--                        <span th:replace="~{/modules/attendance-check-out}"></span>-->
+        <!--                        <img id="after6pm-right" src="../dist/img/alarm.gif" alt="After 6pm Right">-->
+        <!--                    </div>-->
+        <!--                </div>-->
+        <!--                <div th:if="${(#dates.format(todayAttendance.attdOut, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00' and #dates.format(todayAttendance.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00') or (todayAttendance.attdStatus == '휴가')}">-->
+        <!--                    <div th:replace="~{/modules/attendance-button}"></div>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--            <hr>-->
+        <!--                <div class="progress-bar-container">-->
+        <!--                    <span class="time-label">09:00</span>-->
+        <!--                    <span class="progress-bar">-->
+        <!--                        <span id="progress" class="progress">-->
+        <!--                            <img th:if="${currentHour >= 13 && currentHour < 14}" src="../dist/img/lunch.gif" th:src="@{/dist/img/lunch.gif}">-->
+        <!--                            <img th:if="${(currentHour >= 9 && currentHour < 13) || (currentHour > 14 && currentHour < 18)}" src="../dist/img/running.gif" th:src="@{/dist/img/running.gif}">-->
+        <!--                            <img th:if="${(currentHour >= 6 && currentHour < 9)}" src="../dist/img/check-in.gif" th:src="@{/dist/img/check-in.gif}">-->
+        <!--                            <img th:if="${(currentHour >= 18 && currentHour <= 23) || (currentHour >= 0 && currentHour < 6)}" src="../dist/img/check-out.gif" th:src="@{/dist/img/check-out.gif}">-->
+        <!--                        </span>-->
+        <!--                    </span>-->
+        <!--                    <span class="time-label">18:00</span>-->
+        <!--                </div>-->
+        <!--            <hr>-->
+<!--        <div th:replace="~{/modules/calendar}"></div>-->
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- fullCalendar 2.2.5 -->
+<script src="/plugins/moment/moment.min.js"></script>
+<script src="/plugins/fullcalendar/main.js"></script>
+<script src="/plugins/fullcalendar/locales/ko.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<!-- 원본 JS 코드는 밑에 -->
+<script type="text/javascript" th:inline="javascript">
+    $(function () {
+        // 현재 페이지의 URL을 가져옵니다.
+        const currentUrl = window.location.href;
+        let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+
+        <!--url로 전달된 parameter값을 url에서 제거하는 코드-->
+
+        const pathIndex = currentPath.indexOf("?");
+        if (pathIndex != -1) {
+            currentPath = currentPath.substring(0, pathIndex);
+        }
+
+        // 현재 페이지의 URL과 sidebar의 URL을 비교
+        $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+        // 캘린더 호출
+        var Calendar = FullCalendar.Calendar;
+        let projectCalendarEl = document.getElementById('project-calendar');
+        let personalCalendarEl = document.getElementById('personal-calendar');
+
+        /* ------- Project Calender Start ------- */
+        // JS DATE FORMAT FUNCTION ('yyyy-MM-dd')
+        function formatDate(date) {
+            let d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+        // JS DATE FORMAT FUNCTION ('yyyy-MM-dd HH:mm')
+<!--        function formatDateTime(dateString) {-->
+<!--            // 날짜 문자열을 " "로 나눔-->
+<!--            let [datePart, timePart] = dateString.split(' ');-->
+
+<!--            // 날짜 부분을 '-'로 나눔-->
+<!--            let [year, month, day] = datePart.split('-');-->
+
+<!--            // 시간 부분을 ':'로 나눔-->
+<!--            let [hours, minutes] = timePart.split(':');-->
+
+<!--            // 두 자리 숫자로 맞춤-->
+<!--            month = month.padStart(2, '0');-->
+<!--            day = day.padStart(2, '0');-->
+<!--            hours = hours.padStart(2, '0');-->
+<!--            minutes = minutes.padStart(2, '0');-->
+
+<!--            return `${year}-${month}-${day} ${hours}:${minutes}`;-->
+<!--        }-->
+        function formatDateTime(date) {
+            let d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear(),
+                hours = '' + d.getHours(),
+                minutes = '' + d.getMinutes();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+            if (hours.length < 2)
+                hours = '0' + hours;
+            if (minutes.length < 2)
+                minutes = '0' + minutes;
+
+            return [year, month, day].join('-') + ' ' + [hours, minutes].join(':');
+        }
+
+        let serverArr = /*[[${ projects }]]*/;
+        let eventArr = [];
+
+        for (let i = 0; i < serverArr.length; i++) {
+            let calendarColor = '';
+            if (serverArr[i].scheduleStatus == '진행중') {
+                calendarColor = '#ffd814';
+            } else if (serverArr[i].scheduleStatus == '완료') {
+                calendarColor = '#16e031';
+            } else if (serverArr[i].scheduleStatus == '계획중') {
+                calendarColor = '#16c2e0';
+            }
+
+            const obj =
+            {
+                id: serverArr[i].scheduleNo
+                , title: serverArr[i].scheduleTitle
+                , start: serverArr[i].scheduleStartDate.substring(0, 16)
+                , end: serverArr[i].scheduleEndDate.substring(0, 16)
+                , content : serverArr[i].scheduleContent
+                , color: calendarColor
+                , textColor: 'black'
+                , borderColor: '#1f003d'
+                , allDay : true
+            }
+
+            eventArr.push(obj);
+        }
+
+        let projectCalendar = new Calendar(projectCalendarEl, {
+          locale: 'ko',
+          headerToolbar: {
+            left : 'today',
+            center: 'title',
+            right  : 'prevYear,prev,next,nextYear'
+          },
+          themeSystem: 'bootstrap',
+          contentHeight:"auto",
+          handleWindowResize:true,
+          events: eventArr,
+          editable  : false,
+          droppable : false,
+          eventClick : function(info) {
+            $('.modal-title').text(info.event.title);
+            const formatStart = formatDate(info.event.start);
+            const formatEnd = formatDate(info.event.end);
+            $('.modal-start').text(formatStart);
+            $('.modal-end').text(formatEnd);
+            $('.modal-body-content').text(info.event.extendedProps.content);
+            $('.link-button').attr('href', `schedule/project-detail?projectNo=${info.event.id}`);
+            $('.modal').eq(1).modal('show');
+          }
+        });
+
+        projectCalendar.render();
+        /* ------- Project Calender End ------- */
+
+        /* ------- Personal Calender Start ------- */
+
+        /* --- Project-Personal Todo Start --- */
+        // "yyyy-M-d H:i" -> "yyyy-MM-ddTHH:dd" 변환 함수
+<!--        function ISOFormat(dateParam) {-->
+<!--            const [datePart, timePart] = dateParam.split(' ');-->
+<!--            const [year, month, day] = datePart.split('-').map(Number);-->
+<!--            const [hour, minute] = timePart.split(':').map(Number);-->
+
+<!--            const date = new Date(year, month - 1, day, hour, minute);-->
+<!--            return date.toISOString().slice(0, 16);-->
+<!--        }-->
+
+        // 2024-07-27T00:00:00.000+09:00 -> 2024-07-27T00:00
+        function formatProjectTodoDate(dateString) {
+            // Date 객체로 변환
+            const date = new Date(dateString);
+
+            // 날짜 부분 추출
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 1을 더해줌
+            const day = String(date.getDate()).padStart(2, '0');
+
+            // 시간 부분 추출
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            // 원하는 형식으로 결합
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        let serverTodoArr = /*[[${ projectUserTodos }]]*/;
+        let projectTodoArr = [];
+
+        for (let i = 0; i < serverTodoArr.length; i++) {
+
+            const formatedStartDate = formatProjectTodoDate(serverTodoArr[i].userScheduleStartDate);
+            const formatedEndDate = formatProjectTodoDate(serverTodoArr[i].userScheduleEndDate);
+
+            const obj =
+            {
+                id: serverTodoArr[i].scheduleNo
+                , title: serverTodoArr[i].userScheduleContent
+                , start: formatedStartDate
+                , end: formatedEndDate
+                , project : serverTodoArr[i].project.scheduleTitle
+                , status : serverTodoArr[i].userScheduleStatus
+                , color: '#16e031'
+                , textColor: 'black'
+                , borderColor: '#1f003d'
+                , sort: 1
+            }
+
+            projectTodoArr.push(obj);
+        }
+
+        let userCalendar = /*[[${calendar.events}]]*/;
+        for(let i=0; i< userCalendar.length; i++) {
+            const obj =
+                {
+                    id: userCalendar[i].id
+                    , title: userCalendar[i].title
+                    , start: userCalendar[i].start
+                    , end: userCalendar[i].end
+                    , color: userCalendar[i].backgroundColor
+                    , content: userCalendar[i].content
+                    , textColor: 'black'
+                    , borderColor: userCalendar[i].borderColor
+                    , sort: 2
+                }
+              projectTodoArr.push(obj);
+        }
+
+
+        /* --- Project-Personal Todo End --- */
+
+
+        let personalCalendar = new Calendar(personalCalendarEl, {
+          locale: 'ko',
+          headerToolbar: {
+            left : 'prev today next',
+            center: 'title',
+            right  : 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
+          themeSystem: 'bootstrap',
+          events: projectTodoArr, <!-- 임시로 넣어둔 데이터 -->
+          contentHeight:"auto",
+          handleWindowResize:true,
+          editable  : false,
+          droppable : false,
+          eventClick : function(info) {
+            if(info.event.extendedProps.sort == 1){
+                    $('.modal-title').text(info.event.title);
+                    const formatStart = formatDateTime(info.event.start);
+                    const formatEnd = formatDateTime(info.event.end);
+                    $('.project-todo-start').text(formatStart);
+                    $('.project-todo-end').text(formatEnd);
+                    $('.project-todo-name').text(info.event.extendedProps.project);
+                    $('.project-todo-status').text("상태 : " + info.event.extendedProps.status);
+                    $('.project-todo-link-button').attr('href', `schedule/todo?projectNo=${info.event.id}&empId=` + /*[[${ #ctx.session.loginUser.empId }]]*/);
+                    $('.modal').eq(2).modal('show');
+            } else {
+                    $('.modal-title').text(info.event.title);
+                    const formatStart = formatDate(info.event.start);
+                    const formatEnd = formatDate(info.event.end);
+                    $('.modal-start-user').text(formatStart);
+                    $('.modal-end-user').text(formatEnd);
+                    $('.modal-content-user').text(info.event.extendedProps.content);
+                    console.log(info.event.extendedProps.content);
+
+                    $('#userEvent-btn').attr('href','myPage/my-page?tab=1');
+                    $('.modal').eq(3).modal('show');
+            }
+          }
+        });
+
+        personalCalendar.render();
+        /* ------- Personal Calender End ------- */
+
+
+
+
+        // /////////////////////////////////////////
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        if (currentHour >= 16) {
+            document.getElementById('after6pm-left').style.display = 'block';
+            document.getElementById('after6pm-right').style.display = 'block';
+        }
+    });
+    function updateProgressBar() {
+            const progressElement = document.getElementById('progress');
+
+            const startHour = 9;
+            const endHour = 18;
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
+
+            const startTime = startHour * 60;
+            const endTime = endHour * 60;
+            const currentTime = currentHour * 60 + currentMinutes;
+
+            let percentage;
+
+            if (currentTime <= startTime) {
+                percentage = 0;
+            } else if (currentTime >= endTime) {
+                percentage = 100;
+            } else {
+                percentage = ((currentTime - startTime) / (endTime - startTime)) * 100;
+            }
+
+            progressElement.style.width = percentage + '%';
+        }
+
+        updateProgressBar();
+        setInterval(updateProgressBar, 60000);
+
+        const empId = /*[[${session.loginUser.empId}]]*/ 0;
+        initializeWebSocket(empId);
+
+</script>
+
+<!-- 원본 -->
+<!--<script type="text/javascript">-->
+<!--    $(function () {-->
+<!--      // 현재 페이지의 URL을 가져옵니다.-->
+<!--      const currentUrl = window.location.href;-->
+<!--      let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');-->
+
+<!--      &lt;!&ndash;url로 전달된 parameter값을 url에서 제거하는 코드&ndash;&gt;-->
+
+<!--      const pathIndex = currentPath.indexOf("?");-->
+<!--      if (pathIndex != -1) {-->
+<!--        currentPath = currentPath.substring(0, pathIndex);-->
+<!--      }-->
+
+<!--      &lt;!&ndash;end&ndash;&gt;-->
+
+<!--      // 현재 페이지의 URL과 sidebar의 URL을 비교-->
+<!--      $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');-->
+
+<!--      // 캘린더 호출-->
+<!--      refreshCalendar();-->
+
+<!--      const now = new Date();-->
+<!--        const currentHour = now.getHours();-->
+<!--        if (currentHour >= 16) {-->
+<!--            document.getElementById('after6pm-left').style.display = 'block';-->
+<!--            document.getElementById('after6pm-right').style.display = 'block';-->
+<!--        }-->
+<!--    });-->
+<!--    function updateProgressBar() {-->
+<!--    const progressElement = document.getElementById('progress');-->
+
+<!--    // Define start and end times (in minutes)-->
+<!--    const startHour = 9;-->
+<!--    const endHour = 18;-->
+
+<!--    // Get current time-->
+<!--    const now = new Date();-->
+<!--    const currentHour = now.getHours();-->
+<!--    const currentMinutes = now.getMinutes();-->
+
+<!--    // Convert times to minutes-->
+<!--    const startTime = startHour * 60;-->
+<!--    const endTime = endHour * 60;-->
+<!--    const currentTime = currentHour * 60 + currentMinutes;-->
+
+<!--    let percentage;-->
+
+<!--    if (currentTime <= startTime) {-->
+<!--        percentage = 0;-->
+<!--    } else if (currentTime >= endTime) {-->
+<!--        percentage = 100;-->
+<!--    } else {-->
+<!--        // Calculate the percentage-->
+<!--        percentage = ((currentTime - startTime) / (endTime - startTime)) * 100;-->
+<!--    }-->
+
+<!--    // Update progress bar width-->
+<!--    progressElement.style.width = percentage + '%';-->
+<!--}-->
+
+
+<!--// Update progress bar on page load-->
+<!--updateProgressBar();-->
+
+<!--// Optionally, update every minute-->
+<!--setInterval(updateProgressBar, 60000);-->
+
+<!--</script>-->
+
+</body>
+</html>

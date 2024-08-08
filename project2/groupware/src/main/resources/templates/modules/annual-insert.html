@@ -1,0 +1,115 @@
+<button type="button" id="annual-insert" class="btn btn-danger" data-toggle="modal" data-target="#modal-primary">
+    휴가 등록
+</button>
+
+<div class="modal fade" id="modal-primary">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">휴가 등록</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="annualForm">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">사번</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="empId" name="empId" required style="text-align: center;"><br>
+                                </div>
+                            </div>
+
+                            <label style="text-align: center; display: block; width: 100%;">--휴가 정보 등록--</label>
+
+                            <div class="row">
+                                <label style="text-align: center; display: block; width: 100%;">출발일</label>
+                                <div class="col-12">
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required style="text-align: center;"><br>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label style="text-align: center; display: block; width: 100%;">복귀일</label>
+                                <div class="col-12">
+                                    <input type="date" class="form-control" id="endDate" name="endDate" required style="text-align: center;"><br>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label style="text-align: center; display: block; width: 100%;">근태 상태</label>
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdStatus" name="attdStatus" value="휴가" disabled style="text-align: center;"><br>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label style="text-align: center; display: block; width: 100%;">사유</label>
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDetail" name="attdDetail" required style="text-align: center;"><br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="annual-insert-button" data-dismiss="modal">등록</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('annual-insert-button').addEventListener('click', function() {
+        var empId = document.getElementById('empId').value;
+        var startDate = document.getElementById('startDate').value;
+        var endDate = document.getElementById('endDate').value;
+        var attdStatus = document.getElementById('attdStatus').value;
+        var attdDetail = document.getElementById('attdDetail').value;
+
+        // Validate input
+        if (!empId || !startDate || !endDate || !attdStatus || !attdDetail) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+
+        var start = new Date(startDate);
+        var end = new Date(endDate);
+        var dates = [];
+
+        // Generate all dates between startDate and endDate
+        while (start <= end) {
+            dates.push(new Date(start).toISOString().split('T')[0]);
+            start.setDate(start.getDate() + 1);
+        }
+
+        var data = {
+            empId: empId,
+            dates: dates,
+            attdStatus: attdStatus,
+            attdDetail: attdDetail
+        };
+
+        console.log("Sending data:", data); // 전송 데이터 로그 확인
+
+        // AJAX 요청
+        $.ajax({
+               type: 'POST',
+               url: '/modules/annual-insert',
+               data: JSON.stringify(data),
+               contentType: 'application/json',
+               dataType: 'text',
+               success: function(response, status, xhr) {
+                   console.log('AJAX 성공:', response);
+                   window.alert('휴가 등록 완료');
+                   location.reload();
+               },
+               error: function(xhr, status, error) {
+                   console.log('AJAX 오류:', error);
+               }
+           });
+       });
+   });
+
+</script>

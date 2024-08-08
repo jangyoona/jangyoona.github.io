@@ -1,0 +1,37 @@
+<div class="card-header">
+    <h3 class="card-title">
+        전자결재 | <strong>기안선저장함</strong>
+    </h3>
+    <br>
+    <hr>
+</div>
+<!-- /.card-header -->
+<!-- Horizontal Form -->
+<button type="button" class="btn btn-block btn-outline-dark" id="approval-line-write-btn"><strong>결재선 등록하기</strong></button>
+<div class="card card-info">
+    <div class="card-header">
+        <h3 class="card-title">approval-active-list</h3>
+    </div>
+    <table xmlns:th="http://www.thymeleaf.org">
+        <tr>
+            <th>기안선 번호</th>
+            <th>제목</th>
+            <th>상세</th>
+        </tr>
+        <tr th:each="approval, approvalState : ${approvals}">
+                <td th:text="${approvals.get(approvalState.count - 1).saveLineNo}"></td>
+                <td th:text="${approval.lineTitle}"></td>
+            <td>
+                <a th:id="approval-list-detail-btn"
+                   th:href="@{'approval-list-detail?saveLineNo=' + ${approval.saveLineNo}}"
+                   class="btn btn-block bg-gradient-info">상세보기</a>
+            </td>
+    </table>
+    <!-- /.card-header -->
+    <!-- form start -->
+</div>
+<nav aria-label="Page navigation example" id="navigation">
+    <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+        [(${ pager })]
+    </ul>
+</nav>
