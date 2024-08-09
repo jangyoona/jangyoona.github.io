@@ -40,16 +40,12 @@
       <div> <!-- class="input-group-text" -->
         <span class="fas fa-envelope" style="margin-bottom:20px;"></span>
       </div>
-        <div class="input-group mb-3" style="place-content: center">
-          <div id="message"></div>
-          <!--<input type="email" name="email" class="form-control" placeholder="아이디를 입력하세요" required>-->
-<!--          <div class="input-group-append">-->
-
-<!--          </div>-->
-          <br>
-          <div>
-            <div>등록된 이메일로 인증 메일을 발송하였습니다.</div>
-            <div>이메일을 확인해 주세요.</div>
+      <div class="input-group mb-3" style="place-content: center">
+        <div id="message"></div>
+        <br>
+        <div>
+          <div>등록된 이메일로 인증 메일을 발송하였습니다.</div>
+          <div>이메일을 확인해 주세요.</div>
 
           <form action="email-checkAuthCode" method="post">
             <div class="input-group mb-3">
@@ -63,18 +59,17 @@
               </div>
             </div>
             <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 98% !important;"/>
-
         </div>
       </div>
 
-        <div class="row">
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">인증번호 확인</button>
-            <button type="button" class="btn btn-light btn-block" id="cancel-btn">닫기</button><br>
-          </div>
-          <!-- /.col -->
-        </div>
-      </form>
+              <div class="row">
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary btn-block" id="submit-btn">인증번호 확인</button>
+                  <button type="button" class="btn btn-light btn-block" id="cancel-btn">닫기</button><br>
+                </div>
+                <!-- /.col -->
+              </div>
+          </form>
       <p class="mt-3 mb-1">
     </div>
     <!-- /.login-card-body -->
@@ -91,11 +86,6 @@
 <script type="text/javascript" th:inline="javascript">
 
   $(function() {
-
-<!--      if (location.pathname === '/account/email-check' && !location.search) {-->
-<!--          alert('잘못된 접근입니다1111');-->
-<!--          window.location.href = "/home";-->
-<!--      }-->
 
       // 해당 페이지로 뒤로가기로 오는 움직임 막기
       window.addEventListener('pageshow', (event) => {
@@ -121,7 +111,7 @@
           new Promise((resolve, reject) => {
                 $.ajax({
                     url : 'email-checkAuthCode',
-                    data : { number : userKey, empId : id},
+                    data : { number : userKey, empId : id },
                     dataType : "text",
                     success : function(result){
                         resolve(result);

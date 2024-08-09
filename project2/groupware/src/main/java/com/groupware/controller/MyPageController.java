@@ -50,7 +50,6 @@ public class MyPageController {
 
     @GetMapping("/my-page")
     public String myPageTestForm(HttpSession session, Model model, String keyWord, @RequestParam(name = "tab", required = false) Integer tab) {
-        // 마이페이지 일단 부서만 가져오면 됨
         EmployeeDto employee = (EmployeeDto)session.getAttribute("loginUser");
         List<UserScheduleDto> scheduleList =  myPageService.getUserSchedule(employee.getEmpId(), "null");
         List<AttendanceDto> empAttendance = attdService.findAttendanceByEmpId(employee.getEmpId());
@@ -368,12 +367,6 @@ public class MyPageController {
         myPageService.deleteUserFile(fileNo);
         return "success";
 
-    }
-
-    // 안할거면 지워
-    @GetMapping("/board-test")
-    public String boardNotice() {
-        return "myPage/board-test";
     }
 
 
