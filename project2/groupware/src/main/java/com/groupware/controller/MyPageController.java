@@ -435,26 +435,6 @@ public class MyPageController {
         return "success";
     }
 
-    // ////////////////////////////////////////////////////
-    @GetMapping("/z_test")
-    public String ztest(Model model,HttpSession session){
-
-        EmployeeDto loginUser = (EmployeeDto) session.getAttribute("loginUser");
-
-        List<EmployeeDto> employee = approvalService.findEmployee();
-        List<ApprovalFormDto> approvalForm = approvalService.findApprovalForm();
-
-        model.addAttribute("loginUser", loginUser);
-        model.addAttribute("approvalForm", approvalForm);
-        model.addAttribute("employees", employee);
-
-        // 윤아
-        List<UserFileBoxDto> userFileList = myPageService.getUserFileList(loginUser.getEmpId(), 1, "all");
-        model.addAttribute("userFileList", userFileList);
-
-        return "myPage/z_test";
-    }
-
 }
 
 
