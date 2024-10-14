@@ -68,7 +68,7 @@
 > * ### Spring Security 기반 접속 정보 인증과 권한부여
 > * ### Security Remember-me 자동로그인
 > * ### OAuth2 기반 소셜 로그인 연동
-> * ### Cookie를 활용한 아이디 저장 기능 `(30일 저장기간 설정)`
+> * ### Cookie를 활용한 아이디 저장 기능
 <br>
 
 | ![로그인1](https://github.com/user-attachments/assets/95b9f9bc-47d4-47fb-b7fc-93d2b7709bea) | ![로그인2](https://github.com/user-attachments/assets/03e38332-e521-4cd1-8428-d9bf4d5e6192) |
