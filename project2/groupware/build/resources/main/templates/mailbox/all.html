@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><!-- Google Font: Source Sans Pro -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mail</title>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="../../plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <style>
+    .nav-link {
+      cursor: pointer;
+    }
+    .email-status {
+    display: inline-block;
+    width: 60px;
+    font-size: 12px;
+    text-align: center;
+    }
+    .unread {
+    background-color: #f2f2f2; /* 읽지 않은 메일에 회색 배경색 */
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>메일리스트</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Mail</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-md-3">
+          <div>
+            <a href="/mailbox/write" class="btn btn-primary btn-block mb-3">메일쓰기</a>
+            <div th:replace="~{/modules/mail-sidebar}"></div>
+          </div>
+        </div>
+        <div class="col-md-9" id="mail-list" xmlns:th="http://www.thymeleaf.org">
+        </div>
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+
+<script th:inline="javascript">
+$(function() {
+    let selectedEmails = [];
+
+    // 현재 페이지의 URL을 가져옵니다.
+    const currentUrl = window.location.href;
+    let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+    const pathIndex = currentPath.indexOf("?");
+    if (pathIndex != -1) {
+      currentPath = currentPath.substring(0, pathIndex);
+    }
+    // URL 파라미터 읽기
+    function getQueryParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+    }
+
+    // 현재 페이지의 URL과 sidebar의 URL을 비교
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+
+    let listType = 'all-list'; // 전역 변수 선언 및 기본값 설정
+    let pageNo = 1;
+    let searchText = "";
+    // 화면이 처음 보여질 때 메일 목록 가져오기
+    function loadMailList(address, searchText, pageNo) {
+      let url = address;
+
+      url += '?&searchText=' + encodeURIComponent(searchText) + '&pageNo=' + pageNo;
+
+      $('#mail-list').load(url, function() {
+        // 페이지 로딩 시 모든 체크박스를 해제
+        $('.mailbox-messages input[type="checkbox"]').prop('checked', false);
+        $('.checkbox-toggle .far.fa-check-square').removeClass('fa-check-square').addClass('fa-square');
+        selectedEmails = []; // 선택된 이메일 번호 배열 비우기
+      });
+    }
+    // 페이지 로드 시 리스트 타입에 따라 메일 목록 로드
+    $(document).ready(function() {
+      const listType = getQueryParameter('listType') || 'all-list'; // 기본값 설정
+      loadMailList(listType, searchText, pageNo); // 메일 목록 로드
+    });
+
+    // 사이드바 버튼 클릭 이벤트
+    $('.nav-link').on('click', function(e) {
+      listType = $(this).data('list'); // 전역 변수에 리스트 타입 저장
+      loadMailList(listType, searchText= "", pageNo= 1); // 해당 리스트 로드
+    });
+
+    // 메일 검색 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-search', function() {
+      listType = 'search-list';
+      searchText = $('#searchInput').val(); // 검색어 가져오기
+      loadMailList(listType, searchText, pageNo= 1); // searchText를 인자로 추가하여 함수 호출
+    });
+
+    // 페이지 변경 클릭 이벤트
+    $('#mail-list').on('click', '.page-link', function() {
+      pageNo = $(this).data('page'); // 클릭한 페이지 번호 가져오기
+      loadMailList(listType, searchText, pageNo); // 업데이트된 listType 사용
+    });
+
+    // 체크박스 토글 이벤트
+    $('#mail-list').on('click', '.checkbox-toggle', function () {
+      var clicks = $(this).data('clicks');
+      if (clicks) {
+        // 모든 체크박스 해제
+        $('.mailbox-messages input[type="checkbox"]').prop('checked', false);
+        $('.checkbox-toggle .far.fa-check-square').removeClass('fa-check-square').addClass('fa-square');
+        selectedEmails = [];
+      } else {
+        // 모든 체크박스 선택
+        $('.mailbox-messages input[type="checkbox"]').prop('checked', true);
+        $('.checkbox-toggle .far.fa-square').removeClass('fa-square').addClass('fa-check-square');
+        selectedEmails = $('.mailbox-messages input[type="checkbox"]:checked').map(function() {
+          return {
+            emailNo: $(this).data('email-no'),
+            emailFrom: $(this).data('email-from'),
+            emailTo: $(this).data('email-to')
+          };
+        }).get();
+      }
+      $(this).data('clicks', !clicks);
+    });
+
+    // 개별 체크박스 변경 이벤트
+    $('#mail-list').on('change', '.mailbox-messages input[type="checkbox"]', function() {
+      const emailNo = $(this).data('email-no');
+      const emailFrom = $(this).data('email-from');
+      const emailTo = $(this).data('email-to');
+      if (this.checked) {
+        // 체크된 경우
+        if (!selectedEmails.some(email => email.emailNo === emailNo)) {
+          selectedEmails.push({ emailNo, emailFrom, emailTo }); // 객체 형태로 추가
+        }
+      } else {
+        // 체크 해제된 경우
+        selectedEmails = selectedEmails.filter(email => email.emailNo !== emailNo); // 해당 이메일 제거
+      }
+    });
+
+    // 공통 AJAX 요청 함수
+    function handleEmailAction(actionUrl, successMessage, errorMessage) {
+      if (selectedEmails.length === 0) {
+        alert('처리할 메일을 선택해주세요.');
+        return;
+      }
+
+      const mailListDto = {
+        mails: selectedEmails.map(email => ({
+          emailNo: email.emailNo,
+          emailFrom: email.emailFrom,
+          emailTo: email.emailTo
+        }))
+      };
+
+      $.ajax({
+        url: actionUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(mailListDto),
+        success: function(response) {
+          alert(successMessage);
+          loadMailList(listType, searchText, pageNo);
+        },
+        error: function(xhr, status, error) {
+          alert(errorMessage);
+        }
+      });
+    }
+
+    // 삭제 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-delete', function() {
+      handleEmailAction('/mailbox/delete-mails', '메일이 삭제되었습니다.', '메일 삭제 중 오류가 발생했습니다.');
+    });
+
+    // 삭제 취소 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-deleteCancel', function() {
+      handleEmailAction('/mailbox/delete-cancel-mails', '메일이 삭제취소 되었습니다.', '메일 삭제 중 오류가 발생했습니다.');
+    });
+
+    // 휴지통 비우기 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-realDelete', function() {
+      handleEmailAction('/mailbox/real-delete-mails', '메일이 삭제되었습니다.', '메일 삭제 중 오류가 발생했습니다.');
+    });
+
+    // 중요메일 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-mark', function() {
+      handleEmailAction('/mailbox/mark-mails', '메일이 중요메일로 설정되었습니다.', '중요메일 설정 중 오류가 발생했습니다.');
+    });
+
+    // 중요메일 삭제 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-remove-mark', function() {
+      handleEmailAction('/mailbox/remove-mark-mails', '중요메일로 설정이 취소되었습니다.', '중요메일 설정 취소 중 오류가 발생했습니다.');
+    });
+
+    // 답장 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.btn-redirect', function() {
+      if (selectedEmails.length === 0) {
+        alert('답장할 메일을 선택해주세요.');
+        return;
+      }
+      const emailFromArray = selectedEmails.map(email => email.emailFrom);
+      const emailFromQuery = emailFromArray.join(',');
+      location.href = '/mailbox/write?emails=' + encodeURIComponent(emailFromQuery);
+    });
+
+    // 새로 고침 버튼 클릭 이벤트
+    $('#mail-list').on('click', '.refreshEmail', function() {
+      $.ajax({
+        url: '/mailbox/all-list',
+        type: 'GET',
+        success: function(data) {
+          alert('메일 목록이 새로 고쳐졌습니다.');
+          loadMailList(listType, searchText, pageNo);
+        },
+        error: function(xhr, status, error) {
+          console.error('메일 새로 고침 오류:', error);
+        }
+      });
+    });
+
+    const empId = /*[[${session.loginUser.empId}]]*/ 0;
+    initializeWebSocket(empId);
+
+  });
+</script>
+</body>
+</html>

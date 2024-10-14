@@ -1,0 +1,75 @@
+body {
+    overflow-x: hidden;
+}
+
+li {
+    list-style: none;
+}
+
+.main-container {
+    padding-top: 2rem;
+}
+
+.dept-list-container {
+    margin-top: 1rem;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 1rem;
+    row-gap: 1rem;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+}
+
+.dept-list {
+    display: none;
+    justify-content: center;
+    text-align: center;
+    column-gap: 1rem;
+    font-size: 1.3rem;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.dept-list button, .emp-list button {
+    background-color: white;
+}
+
+.dept-list span {
+    border: none;
+}
+
+.emp-list-container, .pm-list-container {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    column-gap: 1rem;
+    row-gap: 1rem;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+}
+
+.emp-list, .pm-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    column-gap: 1rem;
+    font-size: 1rem;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.search-button {
+    cursor: pointer;
+}
+
+.search-button span {
+    transition: all 0.3s;
+}
+
+.search-button span:hover {
+    background-color: black;
+    color: white;
+}

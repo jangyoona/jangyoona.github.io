@@ -1,0 +1,30 @@
+
+    <table class="table table-hover text-nowrap" xmlns:th="http://www.thymeleaf.org">
+        <thead>
+        <tr>
+            <th>No.</th>
+            <th>최근접속일자</th>
+            <th>구분</th>
+            <th>Ip</th>
+            <th>상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="attempt, start :${ loginAttempt }">
+            <td th:text="|${ start.count }|"></td>
+            <td th:text="${ #dates.format(attempt.timestamp, 'yyyy-MM-dd hh:mm:ss') }"></td>
+            <td th:text="${ attempt.diff == 'login' ? '로그인' : '로그아웃' }"></td>
+            <td th:text="${ attempt.ipAddress }"></td>
+            <td th:text="${ attempt.success == true ? '성공' : '실패' }"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- pager -->
+<nav aria-label="Page navigation example" id="navigation">
+    <ul class="pagination paging" th:data-pageno='${ pageNo }' th:data-datacount="${ dataCount }">
+        [(${ pager })]
+    </ul>
+</nav>
+<!-- /pager -->

@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.ApprovalMapper">
+    <!-- 문서 양식 저장-->
+    <insert id="insertApprovalForm" parameterType="ApprovalFormDto">
+        INSERT INTO approval_form (
+            approval_form_title,
+            approval_form_document,
+            document_active
+        )
+        VALUES (
+            #{approvalFormTitle},
+            #{approvalFormDocument},
+            #{documentActive})
+    </insert>
+
+    <!-- 문서 양식 불러오기 -->
+    <select id="selectApprovalFormDocument" parameterType="ApprovalFormDto" resultType="ApprovalFormDto">
+        SELECT
+            approval_form_no AS approvalFormNo,
+            approval_form_title AS approvalFormTitle,
+            approval_form_document AS approvalFormDocument,
+            document_active AS documentActive
+        FROM
+            approval_form
+        WHERE
+            document_active = 1
+    </select>
+
+    <!-- 웹에디터에 내용 불러오기 -->
+    <select id="selectApprovalForm" parameterType="ApprovalFormDto" resultType="ApprovalFormDto">
+        SELECT
+            approval_form_document AS approvalFormDocument
+        FROM
+            approval_form
+        WHERE
+            approval_form_title = #{approvalFormTitle} AND approval_form_no
+    </select>
+
+    <!-- detail 결재 데이터 불러오기 -->
+    <select id="selectApprovalByApprovalNo" parameterType="ApprovalDto" resultType="ApprovalDto">
+        SELECT
+            a.approval_document_no AS approvalDocumentNo,
+            a.approval_title AS approvalTitle,
+            a.approval_content AS approvalContent,
+            e.emp_name AS empName,
+            e.dept_no AS deptNo,
+            <!--e.emp_position AS empPosition-->
+            p.position_name AS positionName
+        FROM
+            approval a
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        JOIN
+            position p ON e.position_no = p.position_no
+        WHERE
+            a.approval_document_no = #{approvalDocumentNo}
+    </select>
+
+    <select id="getApprovalFormCount" parameterType="hashmap" resultType="int" >
+        SELECT
+            COUNT(*)
+        FROM
+            approval_form
+        WHERE
+              approval_form_title = #{approvalFormSelect}
+    </select>
+
+    <select id="selectApprovalFormSearch" parameterType="hashmap" resultType="ApprovalFormDto">
+        SELECT
+            approval_form_no AS approvalFormNo,
+            approval_form_title AS approvalFormTitle,
+            approval_form_document AS approvalFormDocument,
+            document_active AS documentActive
+        FROM
+            approval_form
+        WHERE
+                approval_form_title = #{approvalFormSelect}
+        ORDER BY
+            approval_form_no DESC
+        LIMIT
+            #{start} , 5
+    </select>
+
+    <!-- list page count  -->
+    <select id="selectApprovalCount" parameterType="int" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            approval
+        WHERE
+            approval_active != '상신취소'  AND emp_id = ${empId}
+    </select>
+    <!-- list select  -->
+    <select id="selectApprovals" parameterType="int" resultType="ApprovalDto">
+        SELECT
+                a.approval_document_no AS approvalDocumentNo,
+                a.emp_id AS empId,
+                a.approval_date AS approvalDate,
+                a.approval_form AS approvalForm,
+                a.approval_title AS approvalTitle,
+                a.approval_content AS approvalContent,
+                a.approval_active AS approvalActive,
+                e.emp_name AS empName
+        FROM
+            approval a
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        WHERE
+            a.approval_active != '상신취소' AND a.emp_id = ${empId}
+        ORDER BY
+            a.approval_document_no DESC
+        LIMIT
+            #{start} , 5
+    </select>
+    <!--waiting list page count  -->
+    <select id="selectApprovalWaitingCount" parameterType="int" resultType="int">
+        SELECT
+             COUNT(*)
+        FROM
+              approver ver
+        LEFT JOIN
+              approval a ON ver.approval_document_no = a.approval_document_no
+        LEFT JOIN
+             employee e ON a.emp_id = e.emp_id
+        WHERE
+             ver.emp_id = #{empId} AND ver.approval_active = '결재대기'
+    </select>
+
+    <select id="selectApprovalWaitingSearchList" parameterType="hashmap" resultType="ApprovalDto">
+        SELECT
+            a.approval_document_no AS approvalDocumentNo,
+            a.approval_date AS approvalDate,
+            a.approval_form AS approvalForm,
+            a.approval_title AS approvalTitle,
+            a.approval_active AS approvalActive,
+
+            e.emp_name AS empName
+        FROM
+            approver ver
+        LEFT JOIN
+            approval a ON ver.approval_document_no = a.approval_document_no
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        WHERE
+            ver.emp_id = #{empId} AND ver.approval_active = '결재대기'
+            <if test="approvalFormSelect != null and approvalFormSelect != '선택'">
+                AND approval_form = #{approvalFormSelect}
+            </if>
+            <if test="approvalSearchValue != null and approvalSearchValue != ''">
+                AND approval_active LIKE CONCAT('%', #{approvalSearchValue}, '%')
+            </if>
+        ORDER BY
+            a.approval_document_no DESC
+        LIMIT
+            #{start} , 5
+
+    </select>
+
+
+    <!--  page  -->
+    <select id="selectApprovalFormCount" resultType="int" >
+        SELECT
+            COUNT(*)
+        FROM
+            approval_form
+
+    </select>
+    <!--  page form list 양식 불러오기 -->
+    <select id="selectApprovalForms" parameterType="int" resultType="ApprovalFormDto">
+        SELECT
+            approval_form_no AS approvalFormNo,
+            approval_form_title AS approvalFormTitle,
+            approval_form_document AS approvalFormDocument,
+            document_active AS documentActive
+        FROM
+            approval_form
+        ORDER BY
+            approval_form_no DESC
+        LIMIT
+            #{start} , 5
+    </select>
+
+    <select id="selectApprovalFormByapprovalFormNo" parameterType="int" resultType="ApprovalFormDto">
+        SELECT
+            approval_form_no AS approvalFormNo,
+            approval_form_title AS approvalFormTitle,
+            approval_form_document AS approvalFormDocument,
+            document_active AS documentActive
+        FROM
+            approval_form
+        WHERE
+            approval_form_no = ${approvalFormNo}
+    </select>
+
+    <!--waiting list select  -->
+    <!--결재대기함 / 직원 ID로 결재 문서 불러오기 -->
+    <select id="selectApprovalWaitings" parameterType="int" resultType="ApprovalDto">
+        SELECT
+            a.approval_document_no AS approvalDocumentNo,
+            a.approval_date AS approvalDate,
+            a.approval_form AS approvalForm,
+            a.approval_title AS approvalTitle,
+            a.approval_active AS approvalActive,
+
+            e.emp_name AS empName
+        FROM
+            approver ver
+        LEFT JOIN
+            approval a ON ver.approval_document_no = a.approval_document_no
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        WHERE
+            ver.emp_id = #{empId} AND ver.approval_active = '결재대기'
+        ORDER BY
+            a.approval_document_no DESC
+        LIMIT
+            #{start} , 5
+    </select>
+
+    <select id="getApprovalSearchCount" parameterType="hashmap" resultType="int">
+
+        SELECT
+            COUNT(*)
+        FROM
+            approval
+        WHERE
+            emp_id = ${empId}
+        <if test="approvalFormSelect != null and approvalFormSelect != '선택'">
+            AND approval_form = #{approvalFormSelect}
+        </if>
+        <if test="approvalSearchValue != null and approvalSearchValue != ''">
+            AND approval_active LIKE CONCAT('%', #{approvalSearchValue}, '%')
+        </if>
+    </select>
+
+    <select id="selectApprovalSearchList" parameterType="hashmap" resultType="ApprovalDto">
+        SELECT
+            a.approval_document_no AS approvalDocumentNo,
+            a.emp_id AS empId,
+            a.approval_date AS approvalDate,
+            a.approval_form AS approvalForm,
+            a.approval_title AS approvalTitle,
+            a.approval_content AS approvalContent,
+            a.approval_active AS approvalActive,
+            e.emp_name AS empName
+        FROM
+            approval a
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        WHERE
+            a.emp_id = #{empId}
+        AND
+            a.approval_active != '상신취소'
+        <if test="approvalFormSelect != null and approvalFormSelect != '선택'">
+            AND a.approval_form = #{approvalFormSelect}
+        </if>
+        <if test="approvalSearchValue != null and approvalSearchValue != ''">
+            AND a.approval_active LIKE CONCAT('%', #{approvalSearchValue}, '%')
+        </if>
+        ORDER BY
+            a.approval_document_no DESC
+        LIMIT
+            #{start}, 5
+    </select>
+
+
+    <select id="getApprovalWaitingSearchCount" parameterType="hashmap" resultType="int">
+        SELECT
+             COUNT(*)
+        FROM
+             approval a
+        JOIN
+             approver ver ON a.approval_document_no = ver.approval_document_no
+        WHERE
+             ver.emp_id = #{empId}
+        <if test="approvalFormSelect != null and approvalFormSelect != '선택'">
+            AND a.approval_form = #{approvalFormSelect}
+        </if>
+        <if test="approvalSearchValue != null and approvalSearchValue != ''">
+            AND a.emp_id LIKE CONCAT('%', #{approvalSearchValue}, '%')
+        </if>
+
+    </select>
+
+    <!-- 결재자 직원 정보 데이터 불러오기 -->
+    <select id="selectApproverByApprovalNo" parameterType="ApprovalDto" resultType="ApproverDto">
+        SELECT
+            a.emp_id AS empId,
+            a.approval_sequence AS approvalSequence,
+            a.approval_active AS approvalActive,
+            e.emp_name AS empName,
+            p.position_name AS positionName,
+            d.dept_name AS deptName
+        FROM
+            approver a
+        INNER JOIN
+            employee e ON a.emp_id = e.emp_id
+        INNER JOIN
+            position p ON e.position_no = p.position_no
+        INNER JOIN
+            department d ON e.dept_no = d.dept_no
+        WHERE
+            approval_document_no = #{approvalDocumentNo}
+        ORDER BY
+            approval_sequence ASC;
+    </select>
+
+    <update id="updateApprovalForm" parameterType="ApprovalFormDto">
+        UPDATE
+            approvalForm
+        SET
+            approval_form_title = #{approvalFormTitle},
+            approval_form_document = #{approvalFormDocument},
+            approval_active = #{approvalActive}
+        WHERE
+            approval_form_no = #{approvalFormNo}
+
+
+    </update>
+
+    <!-- 상신 취소 버튼 -->
+    <update id="updateApprovalDelete" parameterType="ApprovalDto">
+        UPDATE
+            approval a
+        LEFT JOIN
+            approver ver ON a.approval_document_no = ver.approval_document_no
+        SET
+            a.approval_active = '상신취소',
+            ver.approval_active = '상신취소'
+        WHERE
+            a.approval_document_no = #{approvalDocumentNo}
+    </update>
+
+    <!-- 결재 문서 불러오기 -->
+    <select id="selectApproval" parameterType="ApprovalDto" resultType="ApprovalDto">
+        SELECT
+            a.approval_document_no AS approvalDocumentNo,
+            a.approval_date AS approvalDate,
+            a.approval_form AS approvalForm,
+            a.approval_title AS approvalTitle,
+            a.approval_active AS approvalActive,
+            e.emp_name AS empName
+        FROM
+            approval a
+        LEFT JOIN
+            employee e ON a.emp_id = e.emp_id
+        WHERE
+            a.emp_id = #{empId}
+    </select>
+
+    <!-- 결재 등록 -->
+    <insert id="insertApproval" parameterType="ApprovalDto" useGeneratedKeys="true" keyProperty="approvalDocumentNo">
+        INSERT INTO approval (
+            emp_id,
+            approval_form,
+            approval_title,
+            approval_active,
+            approval_content
+            )
+        VALUES (
+            #{empId},
+            #{approvalForm},
+            #{approvalTitle},
+            #{approvalActive},
+            #{approvalContent}
+        )
+    </insert>
+
+    <!-- 결재선 등록 -->
+    <insert id="insertApprover" parameterType="ApproverDto">
+        INSERT INTO approver (
+            approval_document_no,
+            emp_id,
+            approval_sequence,
+            approval_active
+        )
+        VALUES (
+            #{approvalDocumentNo},
+            #{empId},
+            #{approvalSequence},
+            #{approvalActive}
+        )
+    </insert>
+
+    <!-- 직원 정보 불러오기 -->
+    <select id="selectEmployee" parameterType="EmployeeDto" resultType="EmployeeDto">
+        SELECT
+            e.emp_id AS empId,
+            e.emp_name AS empName,
+            d.dept_name AS deptName,
+            p.position_name AS positionName
+        FROM
+            employee e
+        JOIN
+            position p ON e.position_no = p.position_no
+        JOIN
+            department d ON e.dept_no = d.dept_no
+        WHERE
+            emp_active = 1
+            AND p.position_no != 1
+    </select>
+
+    <!-- 결재 승인을 위한 결재자 조회-->
+    <select id="selectApproverByApprovalDocumentNo" parameterType="int" resultType="ApproverDto">
+        SELECT
+            ver.emp_id AS empId ,
+            ver.approval_sequence AS approvalSequence
+        FROM
+            approver ver
+        LEFT JOIN
+            approval a ON ver.approval_document_no = a.approval_document_no
+        WHERE
+            ver.approval_document_no = #{approvalDocumentNo}
+    </select>
+
+    <!-- 결재 과정  -->
+    <update id="updateApproverActiveByApprovalNoByEmpIdByApprovalComment" parameterType="ApproverDto">
+        UPDATE
+            approver ver
+        INNER JOIN
+            approval a ON ver.approval_document_no = a.approval_document_no
+        <set>
+            <choose>
+                <when test='type == "A"'>
+                    ver.approval_active = '결재승인',
+                    ver.approval_comment = #{approvalComment},
+                    a.approval_active = '결재승인',
+                </when>
+                <when test='type == "B"'>
+                    ver.approval_active = '결재승인',
+                    ver.approval_comment = #{approvalComment},
+                    a.approval_active = '결재진행중'
+                </when>
+                <when test='type == "C"'>
+                    ver.approval_active = '반려',
+                    ver.approval_comment = #{approvalComment},
+                    a.approval_active = '반려'
+                </when>
+            </choose>
+        </set>
+        WHERE
+            ver.approval_document_no = #{approvalDocumentNo}
+            AND ver.emp_id = #{empId}
+    </update>
+
+    <!-- 반려 사유 불러오기   -->
+    <select id="selectApprovalCommentByApprovalNo" parameterType="ApprovalDto" resultType="ApproverDto">
+        SELECT
+            approval_comment AS approvalComment,
+            emp_id AS empId
+        FROM
+            approver
+        WHERE
+            approval_document_no = #{approvalDocumentNo}
+            AND approval_sequence = (
+                SELECT
+                    MAX(approval_sequence)
+                    FROM
+                        approver
+                    WHERE
+                        approval_document_no = #{approvalDocumentNo}
+                        AND approval_comment <![CDATA[<>]]> '없음'
+                    );
+    </select>
+
+    <!-- 수정 제출  -->
+    <update id="updateApprovalContent" parameterType="ApprovalDto">
+        UPDATE
+            approval a
+        JOIN
+            approver ver ON a.approval_document_no = ver.approval_document_no
+        SET
+            a.approval_content = #{approvalContent},
+            a.approval_active = '결재대기',
+            ver.approval_active = '결재대기',
+            ver.approval_comment = '없음'
+        WHERE
+            a.approval_document_no = #{approvalDocumentNo}
+            AND a.emp_id = #{empId}
+    </update>
+    <!-- 기존 데이터 날리기   -->
+<!--    <insert id="insertApprovalAndApprover" parameterType="ApprovalDto">-->
+<!--        INSERT INTO approval (-->
+<!--            emp_id,-->
+<!--            approval_form,-->
+<!--            approval_title,-->
+<!--            approval_active,-->
+<!--            approval_content-->
+<!--        )-->
+<!--        VALUES (-->
+<!--            #{empId},-->
+<!--            #{approvalForm},-->
+<!--            #{approvalTitle},-->
+<!--            #{approvalActive},-->
+<!--            #{approvalContent}-->
+<!--        )-->
+<!--    </insert>-->
+
+    <select id="selectApproverEmployeeByApprovalNo" parameterType="ApprovalDto" resultType="ApproverDto">
+        SELECT
+            e.emp_id AS empId,
+            e.emp_name AS empName,
+            d.dept_name AS deptName,
+            p.position_name AS positionName
+        FROM
+            approval a
+        JOIN
+            approver ver ON a.approval_document_no = ver.approval_document_no
+        JOIN
+            employee e ON ver.emp_id = e.emp_id
+        JOIN
+            position p ON e.position_no = p.position_no
+        JOIN
+            department d ON e.dept_no = d.dept_no
+        WHERE
+            a.approval_document_no = ${approvalDocumentNo}
+        ORDER BY
+            approval_sequence ASC;
+    </select>
+
+    <update id="updateApprovalActive" parameterType="ApprovalDto">
+        UPDATE
+            approval a
+        JOIN
+            approver ver ON a.approval_document_no = ver.approval_document_no
+        SET
+          a.approval_form = #{approvalForm},
+          a.approval_title = #{approvalTitle},
+          a.approval_active = #{approvalActive},
+          a.approval_Content = #{approvalContent},
+         ver.approval_active = #{approvalActive}
+
+        WHERE
+            a.approval_document_no = #{approvalDocumentNo}
+    </update>
+    <!-- 결재선 만들기 - 사용자의 결재선 타이틀   -->
+    <insert id="insertApproverLine" parameterType="ApprovalDto" useGeneratedKeys="true" keyColumn="save_line_no" keyProperty="saveLineNo">
+        INSERT INTO approver_line (
+            emp_id,
+            line_title
+        )
+        VALUE(
+            #{empId},
+            #{approvalTitle}
+        )
+    </insert>
+    <!--  결재선만들기 -  결재자 등록하기 -->
+    <insert id="insertApprovers" parameterType="ApproverDto" >
+        INSERT INTO approver_save (
+        save_line_no,
+        emp_id,
+        approval_sequence
+        )
+        VALUE(
+        #{saveLineNo},
+        #{empId},
+        #{approvalSequence}
+        )
+    </insert>
+    <!--  페이징  -->
+    <select id="getApprovalLineCount" parameterType="int" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            approver_line
+        WHERE
+            emp_id = #{empId}
+
+    </select>
+    <!--  결재선 리스트 불러오기  -->
+    <select id="selectApproverListByempId" parameterType="int" resultType="ApproverDto">
+        SELECT
+            save_line_no AS saveLineNo,
+            line_title AS lineTitle
+        FROM
+            approver_line
+        WHERE
+            emp_Id = #{empId}
+        ORDER BY
+             save_line_no DESC
+        LIMIT
+            #{start}, 5
+    </select>
+    <!--  디테일페이지 목록 불러오기  -->
+    <select id="selectApproverSave" parameterType="int" resultType="ApproverDto">
+        SELECT
+            e.emp_name AS empName,
+            d.dept_name AS deptName,
+            p.position_name AS positionName,
+            s.emp_id AS empId
+        FROM
+            approver_save s
+        JOIN
+            employee e ON s.emp_id = e.emp_id
+        JOIN
+            position p ON e.position_no = p.position_no
+        JOIN
+            department d ON e.dept_no = d.dept_no
+        WHERE
+            s.save_line_no = #{saveLineNo}
+        ORDER BY
+          approval_sequence ASC
+    </select>
+    <!-- 디테일페이지 타이틀 불러오기  -->
+    <select id="selectApproverSaveTitle" parameterType="int" resultType="ApproverDto">
+        SELECT
+            line_title AS lineTitle
+        FROM
+            approver_line
+        WHERE
+            save_line_no = #{saveLineNo}
+    </select>
+    <!--  근태 휴가 조회  -->
+    <update id="updateActive" parameterType="ApprovalDto">
+
+        UPDATE
+            approver ver
+        INNER JOIN
+            approval a ON a.approval_document_no = ver.approval_document_no
+        SET
+            a.active= '1'
+        WHERE
+            ver.approval_document_no = #{approvalDocumentNo} AND
+            a.approval_form = '휴가 신청서' AND
+            a.approval_active = '결재승인'
+
+    </update>
+
+    <!-- 결재선 불러오기 (이름,id ,직급 ,부서 다 불러와야함) -->
+   <select id="selectApprovalList" parameterType="ApproverDto" resultType="ApproverDto">
+       SELECT
+            s.emp_id  AS empId,
+            e.emp_name  AS empName,
+            p.position_name AS positionName,
+            d.dept_name AS deptName
+       FROM
+            approver_line l
+       JOIN
+            approver_save s ON l.save_line_no = s.save_line_no
+       JOIN
+            employee e ON s.emp_id = e.emp_id
+       JOIN
+            position p ON e.position_no = p.position_no
+       JOIN
+            department d ON e.dept_no = d.dept_no
+       WHERE
+            l.line_title = #{lineTitleId} AND l.emp_id = #{empId}
+   </select>
+
+    <select id="selectLineTitleByEmpId" parameterType="int" resultType="ApproverDto">
+        SELECT
+            line_title AS lineTitle
+        FROM
+            approver_line
+        WHERE
+            emp_id = #{empId}
+    </select>
+
+
+<!--    <select id="selectApproverSaveList" resultType="ApproverDto">-->
+<!--        SELECT-->
+
+<!--        FROM-->
+<!--            approver_line-->
+<!--        JOIN-->
+<!--            approver_save-->
+
+
+<!--    </select>-->
+
+</mapper>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Approval-Write</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="../../plugins/summernote/summernote-bs4.min.css">
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="../../plugins/codemirror/codemirror.css">
+  <link rel="stylesheet" href="../../plugins/codemirror/theme/monokai.css">
+  <!-- SimpleMDE -->
+  <!--  <link rel="stylesheet" href="../../plugins/simplemde/simplemde.min.css">-->
+
+  <style>
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .button-container input {
+          margin-left: 10px;
+    }
+
+   table {
+            width: auto;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+            white-space: nowrap;
+        }
+        td {
+            width: 200px;
+        }
+
+  </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <!-- Navbar -->
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!--end Main Sidebar Container -->
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>결재선 저장</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">전자 결재</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+
+    <section class="content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-outline card-info">
+            <div class="card-header">
+              <h3 class="card-title">
+                전자결재 | <strong>결재선</strong>
+              </h3>
+              <br>
+              <hr>
+            </div>
+            <!-- /.card-header -->
+            <!-- Horizontal Form -->
+            <div class="card card-info">
+              <div class="card-header">
+                <h3 class="card-title">결재선 저장하기</h3>
+              </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+              <form class="approval-line-write" name="approval-line-write" method="post" action="approval-line-write">
+                <div class="card-body">
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">기안자</label>
+                    <div class="col-sm-10">
+                      <input type="hidden" name="empName" th:value='${#ctx.session.loginUser.empName}'>
+                      <input type="hidden" name="empId" th:value='${#ctx.session.loginUser.empId}'>
+                      <input type="hidden" name="approvalSequence" th:value="0">
+                      <span th:text='${#ctx.session.loginUser.empName}'></span>
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label for="inputTitle" class="col-sm-2 col-form-label">제목</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="approvalTitle" class="form-control" id="inputTitle" placeholder="title">
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">결재선</label>
+                    <div class="col-sm-10" id="approvers-container">
+                      <div class="approver-group" id="approver-template" style="display: none;">
+                        <label class="col-sm-2 col-form-label">결재자</label>
+                        <select name="line[]" class="form-control approver-select">
+                          <option value="">결재자 선택</option>
+                          <option th:each="employee : ${employees}" th:value="${employee.empId}" th:text="${employee.deptName} + ' - ' + ${employee.positionName} + ' - ' + ${employee.empName}"></option>
+                        </select>
+                        <button type="button" class="btn btn-block btn-secondary" onclick="removeApprover(this)">삭제</button>
+                      </div>
+                      <br>
+                    </div>
+                    <div class="col-sm-10 offset-sm-2">
+                      <button type="button" class="btn btn-block btn-info" onclick="addApprover()">결재자 추가</button>
+                    </div>
+                  </div>
+                  <hr>
+                  <hr>
+                  <button type="button" class="btn btn-block btn-outline-info" id="go-back-btn">목록보기</button>
+                  <button type="submit" class="btn btn-block btn-outline-info" id="approval-save-btn">저장</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- /.col-->
+      </div>
+      <!-- ./row -->
+
+      <!-- ./row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- Summernote -->
+<script src="../../plugins/summernote/summernote-bs4.min.js"></script>
+<!-- CodeMirror -->
+<script src="../../plugins/codemirror/codemirror.js"></script>
+<script src="../../plugins/codemirror/mode/css/css.js"></script>
+<script src="../../plugins/codemirror/mode/xml/xml.js"></script>
+<script src="../../plugins/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+
+<script type="text/javascript">
+  $(function () {
+    // Initialize Summernote
+    $('#summernote').summernote({
+      height: 600
+    });
+
+
+    $('#go-back-btn').on('click', function(event) {
+       location.href = 'approval-line-list';
+    });
+
+    $('.load-document').on('click', function(event) {
+      event.preventDefault();
+      const approvalFormTitleId = $(this).data('approvalformtitle');
+      console.log('Selected form title ID:', approvalFormTitleId);
+
+
+      $.ajax({
+        url: '/forms/approval/get-document',
+        method: 'GET',
+        dataType: 'json', // Expecting JSON response
+        data: { 'approvalFormTitleId': approvalFormTitleId },
+        success: function(response) {
+          console.log('Document content:', response);  // Debug log
+          // Load data into Summernote editor
+          if (response && response.approvalFormDocument) {
+            $('#summernote').summernote('code', response.approvalFormDocument);
+          } else {
+            alert('Failed to load document content.');
+          }
+        },
+        error: function(xhr, status, error) {
+          // Log error message to console
+          console.error('Template load error:', error);
+        }
+      });
+    });
+
+    // 현재 페이지의 URL을 가져옵니다.
+    const currentUrl = window.location.href;
+    let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+    const pathIndex = currentPath.indexOf("?");
+    if (pathIndex != -1 ) {
+        currentPath = currentPath.substring(0, pathIndex);
+    }
+    // 현재 페이지의 URL과 sidebar의 URL을 비교
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+  });
+
+  function addApprover() {
+    var container = document.getElementById('approvers-container');
+    var template = document.getElementById('approver-template');
+
+    // Clone the template
+    var newApprover = template.cloneNode(true);
+    newApprover.style.display = '';
+    newApprover.removeAttribute('id');
+
+    // Append the new approver field
+    container.appendChild(newApprover);
+  }
+
+  function removeApprover(button) {
+    var container = document.getElementById('approvers-container');
+    var approverGroup = button.parentElement;
+
+    // Remove the approver field
+    container.removeChild(approverGroup);
+  }
+
+  function setApprovalActive(value) {
+      $('#approvalActive').val(value)
+  }
+</script>
+</body>
+</html>

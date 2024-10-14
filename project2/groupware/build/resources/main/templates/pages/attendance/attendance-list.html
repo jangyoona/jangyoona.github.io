@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdminLTE 3 | Blank Page</title>
+
+    <!-- jQuery -->
+    <script src="/plugins/jquery/jquery.min.js"></script>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+    <style>
+        .d-flex {
+            display: flex;
+        }
+        .align-items-center {
+            align-items: center;
+        }
+        .align-middle {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>개인 근태 조회는 마이페이지로</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/home">Home</a></li>
+                            <li class="breadcrumb-item active">응애</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- Main content -->
+        <section class="content">
+            <!-- Default box -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">부서별 금일 근태</h3>
+                                    <div class="card-tools">
+                                        <form id="searchForm" method="GET">
+                                            <input type="hidden" name="deptNo" th:value="${#ctx.session.loginUser.deptNo}">
+                                            <div class="input-group input-group-sm align-items-center d-flex" style="width: 400px;">
+                                                <span class="align-middle" style="font-weight: bold;">부서 선택 :</span>&nbsp;&nbsp;
+                                                <select id="deptSelect" name="deptNo" class="form-control float-left">
+                                                    <option th:each="allDepartment : ${allDepartment}" th:value="${allDepartment.deptNo}" th:text="${allDepartment.deptName}"></option>
+                                                </select>
+                                                <input type="text" name="empName" class="form-control float-right" placeholder="이름으로 검색">
+                                                <div class="input-group-append">
+                                                    <button type="submit" class="btn btn-default">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="card-body table-responsive p-0" style="height: 300px;">
+                                    <table class="table table-head-fixed text-nowrap">
+                                        <colgroup>
+                                            <col style="width: 7%;">
+                                            <col style="width: 11%;">
+                                            <col style="width: 10%;">
+                                            <col style="width: 13%;">
+                                            <col style="width: 13%;">
+                                            <col style="width: 13%;">
+                                            <col style="width: 7%;">
+                                            <col style="width: 26%;">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>사번</th>
+                                            <th>사원 이름</th>
+                                            <th>직위</th>
+                                            <th>날짜</th>
+                                            <th>출근 시간</th>
+                                            <th>퇴근 시간</th>
+                                            <th>상태</th>
+                                            <th>사유</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="attendance-table-body">
+                                        <tr th:each="deptAttendanceToday : ${deptAttendanceToday}" style="height:30px">
+                                            <td th:text="${deptAttendanceToday.empId}"></td>
+                                            <td th:text="${deptAttendanceToday.empName}"></td>
+                                            <td th:text="${deptAttendanceToday.positionName}"></td>
+                                            <td th:text="${#dates.format(deptAttendanceToday.attdDate, 'yyyy-MM-dd')}"></td>
+                                            <td>
+                                                <span th:if="${#dates.format(deptAttendanceToday.attdIn, 'yyyy-MM-dd HH:mm:ss') == '2000-01-01 00:00:00'}" th:text="|[출근 미등록]|"></span>
+                                                <span th:if="${#dates.format(deptAttendanceToday.attdIn, 'yyyy-MM-dd HH:mm:ss') != '2000-01-01 00:00:00'}" th:text="${#dates.format(deptAttendanceToday.attdIn, 'HH:mm:ss')}"></span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${#dates.format(deptAttendanceToday.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="|[퇴근 미등록]|"></span>
+                                                <span th:unless="${#dates.format(deptAttendanceToday.attdOut, 'HH:mm:ss') == '00:00:00'}" th:text="${#dates.format(deptAttendanceToday.attdOut, 'HH:mm:ss')}"></span>
+                                            </td>
+                                            <td th:text="${deptAttendanceToday.attdStatus}"></td>
+                                            <td th:text="${deptAttendanceToday.attdDetail}"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content bg-default">
+            <div class="modal-header">
+                <h4 class="modal-title">수정사유 입력</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="empId2" name="empId2">
+                <input type="hidden" id="attdDate2" name="attdDate2">
+                <div class="modal-body">
+                    <div class="card card-danger">
+                        <div class="card-body">
+                            <label style="text-align: center; display: block; width: 100%;">사유 입력</label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="text" class="form-control" id="attdDetail" style="text-align: center;font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="modifyRequest" data-dismiss="modal">수정요청</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function formatTime(timeStr) {
+        const date = new Date(timeStr);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function fetchAttendance(deptNo, empName) {
+        $.ajax({
+            type: 'GET',
+            url: '/search/attendance',
+            data: { deptNo: deptNo, empName: empName },
+            success: function(response) {
+                var tableBody = $('#attendance-table-body');
+                tableBody.empty(); // Clear existing rows
+
+                response.forEach(function(item) {
+                    var attdIn = formatTime(item.attdIn) === '00:00:00' ? '[출근 미등록]' : formatTime(item.attdIn);
+                    var attdOut = formatTime(item.attdOut) === '00:00:00' ? '[퇴근 미등록]' : formatTime(item.attdOut);
+                    var attdDate = formatDate(item.attdDate);
+
+                    var row = '<tr>' +
+                        '<td>' + item.empId + '</td>' +
+                        '<td>' + item.empName + '</td>' +
+                        '<td>' + item.positionName + '</td>' +
+                        '<td>' + attdDate + '</td>' +
+                        '<td>' + attdIn + '</td>' +
+                        '<td>' + attdOut + '</td>' +
+                        '<td>' + item.attdStatus + '</td>' +
+                        '<td>' + item.attdDetail + '</td>' +
+                        '</tr>';
+                    tableBody.append(row);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('검색 오류:', error);
+            }
+        });
+    }
+
+    $('#searchForm').on('submit', function(event) {
+        event.preventDefault();
+         var deptNo = $('#deptSelect').val();
+        var empName = $('input[name="empName"]').val();
+        fetchAttendance(deptNo, empName); // Fetch data on form submit
+    });
+
+    var loginUserDeptNo = $('input[name="loginUserDeptNo"]').val();
+    $('#deptSelect').val(loginUserDeptNo); // 초기 로드 시 로그인 유저의 deptNo로 설정
+    fetchAttendance(loginUserDeptNo, ''); // Fetch initial data
+
+    $(document).on('click', '.request-modify-button', function() {
+        var row = $(this).closest('tr');
+        var empId = row.find('td').eq(0).text();
+        var attdDate = row.find('td').eq(3).text();
+
+        $('#empId2').val(empId);
+        $('#attdDate2').val(attdDate);
+
+        // 모달을 엽니다.
+        $('#modal-default').modal('show');
+    });
+
+    $('#modifyRequest').on('click', function() {
+        var empId = $('#empId2').val();
+        var attdDate = $('#attdDate2').val().trim();
+        var attdDetail = $('#attdDetail').val();
+
+        var data = {
+            empId: empId,
+            attdDateStr: attdDate,
+            attdDetail: attdDetail
+        };
+
+        console.log("Sending data:", data); // 전송 데이터 로그 확인
+
+        // AJAX 요청
+        $.ajax({
+            type: 'POST',
+            url: '/pages/attendance/attendance-list',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            dataType: 'text',
+            success: function(response, status, xhr) {
+                console.log('AJAX 성공:', response);
+                window.alert('수정 요청 완료');
+                $('#modal-default').modal('hide');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.log('AJAX 오류:', error);
+            }
+        });
+    });
+});
+
+    $(function () {
+
+        // 현재 페이지의 URL을 가져옵니다.
+        const currentUrl = window.location.href;
+        const currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+        // 현재 페이지의 URL과 sidebar의 URL을 비교
+
+        const pathIndex = currentPath.indexOf("?");
+        if (pathIndex != -1) {
+          currentPath = currentPath.substring(0, pathIndex);
+        }
+
+        $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    });
+</script>
+
+</body>
+</html>

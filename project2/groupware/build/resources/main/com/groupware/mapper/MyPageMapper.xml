@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.MyPageMapper">
+
+    <select id="findUserScheduleById" parameterType="hashmap" resultType="UserScheduleDto">
+        SELECT
+            personalschedule_no personalScheduleNo,
+            personalschedule_writedate personalScheduleWriteDate,
+            personalschedule_startdate personalScheduleStartDate,
+            personalschedule_enddate personalScheduleEndDate,
+            personalschedule_content personalScheduleContent, emp_id empId
+        FROM
+            user_schedule
+        WHERE
+            emp_id = #{ empId }
+        ORDER BY
+            <choose>
+                <when test="sortKeyword == '1'.toString()">
+                    personalschedule_writedate DESC
+                </when>
+                <when test="sortKeyword == '2'.toString()">
+                    personalschedule_writedate
+                </when>
+                <when test="sortKeyword == '3'.toString()">
+                    personalschedule_enddate
+                </when>
+                <otherwise>
+                    personalschedule_writedate DESC
+                </otherwise>
+            </choose>
+    </select>
+
+    <select id="findAttendanceById" parameterType="int" resultType="AttendanceDto">
+        SELECT
+            emp_id empId,
+            attd_date attdDate,
+            attd_in attdIn,
+            attd_out attdOut,
+            attd_status attdStatus,
+            attd_detail attdDetail
+        FROM
+            attendance
+        WHERE
+            emp_id = #{ empId } AND attd_date = CURDATE()
+        ORDER BY
+            attd_in DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insertUserSchedule" parameterType="UserScheduleDto">
+        INSERT INTO user_schedule(
+            personalschedule_startdate,
+            personalschedule_enddate,
+            personalschedule_content,
+            emp_id
+        )
+        VALUES (
+            #{ personalScheduleStartDate },
+            #{ personalScheduleEndDate },
+            #{ personalScheduleContent },
+            #{ empId }
+        )
+    </insert>
+    <delete id="deleteUserScheduleColumnByScheduleNo" parameterType="int">
+        DELETE FROM
+            user_schedule
+        WHERE
+            personalschedule_no = #{ scheduleNo }
+    </delete>
+
+    <update id="updateEmpEmailByEmpId" parameterType="map">
+        UPDATE
+            employee
+        SET
+            emp_email = #{ empEmail }
+        WHERE
+            emp_id = #{ empId }
+    </update>
+
+    <update id="updateEmployeeDetailByEmpId" parameterType="EmployeeDetailDto">
+        UPDATE
+            employee_detail
+        SET
+            emp_phone = #{ empPhone },
+            emp_address = #{ empAddress },
+            emp_address_detail = #{ empAddressDetail }
+        WHERE
+            emp_id = #{ empId }
+    </update>
+
+    <select id="findAttendanceCountById" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            attendance
+        <where>
+            <choose>
+                <when test="keyword.equals('all')">
+                    emp_id = #{empId}
+                    AND attd_date BETWEEN #{startDate} AND #{endDate}
+                </when>
+                <otherwise>
+                    emp_id = #{empId}
+                    AND attd_date BETWEEN #{startDate} AND #{endDate}
+                    AND attd_status = #{keyword}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="selectAttendanceById" parameterType="hashmap" resultType="AttendanceDto">
+        SELECT
+            attd_no attdNo,
+            attd_in attdIn,
+            attd_out attdOut,
+            attd_date attdDate,
+            emp_id empId,
+            attd_status attdStatus,
+            attd_detail attdDetail
+        FROM
+            attendance
+        <where>
+            <choose>
+                <when test="keyword.equals('all')">
+                    emp_id = #{ empId }
+                    AND attd_date BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                </when>
+                <otherwise>
+                    emp_id = #{ empId }
+                    AND attd_date BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                    AND attd_status = #{ keyword }
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY
+            attdDate DESC
+        LIMIT
+            #{ start }, 5
+    </select>
+
+    <select id="findLoginAttemptsById" parameterType="hashmap" resultType="LoginAttemptDto">
+        SELECT
+            login_no loginNo,
+            diff,
+            user_name userName,
+            timestamp,
+            ip_address ipAddress,
+            success
+        FROM
+            login_attempts
+
+        <where>
+            <if test="keyword.equals('all')">
+                user_name = #{empId}
+                AND timestamp BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+            </if>
+            <if test="keyword.equals('login') or keyword.equals('logout')">
+                user_name = #{ empId }
+                AND diff = #{ keyword }
+                AND timestamp BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+            </if>
+        </where>
+
+        ORDER BY
+            timestamp DESC
+        LIMIT
+            #{ start }, 5;
+    </select>
+
+    <insert id="insertUserFile" parameterType="UserFileBoxDto">
+        INSERT INTO user_filebox (
+            emp_id,
+            user_filename,
+            saved_filename,
+            note,
+            file_sort
+        )
+        VALUES (
+            #{ empId },
+            #{ userFileName },
+            #{ savedFileName },
+            #{ note },
+            #{ fileSort }
+        )
+    </insert>
+
+    <select id="findAllUserFileBoxByEmpId" parameterType="map" resultType="UserFileBoxDto">
+        SELECT
+            file_no fileNo,
+            emp_id empId,
+            user_filename userFileName,
+            saved_filename savedFileName,
+            note,
+            save_date saveDate,
+            file_sort fileSort
+        FROM
+            user_filebox
+        <where>
+            <choose>
+                <when test="keyword.equals('all')">
+                    emp_id = #{empId}
+                </when>
+                <otherwise>
+                    emp_id = #{empId}
+                    AND file_sort = #{keyword}
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY
+            save_date DESC
+        LIMIT
+            #{ start }, 5;
+    </select>
+
+    <select id="findUserFileByFileNo" parameterType="int" resultType="UserFileBoxDto">
+        SELECT
+            file_no fileNo,
+            emp_id empId,
+            user_filename userFileName,
+            saved_filename savedFileName,
+            note,
+            save_date saveDate,
+            file_sort fileSort
+        FROM
+            user_filebox
+        WHERE
+            file_no = #{ fileNo }
+    </select>
+
+    <select id="findUserFileBoxCountByEmpId" parameterType="map" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            user_filebox
+        <where>
+            <choose>
+                <when test="keyword.equals('all')">
+                    emp_id = #{empId}
+                </when>
+                <otherwise>
+                    emp_id = #{empId}
+                    AND file_sort = #{keyword}
+                </otherwise>
+            </choose>
+        </where>
+        ORDER BY
+            save_date DESC
+    </select>
+
+    <delete id="deleteUserFileByFileNo" parameterType="int">
+        DELETE FROM
+            user_filebox
+        WHERE
+            file_no = #{fileNo}
+    </delete>
+
+    <select id="findUserBookmarkByEmpId" parameterType="hashmap" resultType="UserBookmarkDto">
+        SELECT
+            e.emp_id AS empId,
+            e.emp_name AS empName,
+            e.emp_email AS empEmail,
+            e.dept_no AS deptNo,
+            d.dept_name AS deptName,
+            ed.emp_phone AS empPhone,
+            ub.contact_id AS contactId,
+            ub.bookmark_active AS bookmarkActive
+        FROM
+            user_bookmark ub
+        INNER JOIN
+            employee e
+        ON
+            ub.contact_id = e.emp_id
+        LEFT JOIN
+            employee_detail ed
+        ON
+            e.emp_id = ed.emp_id
+        LEFT JOIN
+            department d
+        ON
+            e.dept_no = d.dept_no
+        WHERE
+            ub.emp_id = #{empId}
+        <if test="option.equals('name')">
+            AND e.emp_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="option.equals('email')">
+            AND e.emp_email LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="option.equals('phone')">
+            AND ed.emp_phone LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <choose>
+            <!-- Default sorting when sortName is 'all' or not specified -->
+            <when test="sortName == null or sortName.equals('all')">
+                <choose>
+                    <when test="option.equals('all') and keyword.equals('all')">
+                        ORDER BY bookmark_active DESC, e.emp_name ASC
+                    </when>
+                    <otherwise>
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="sortName.equals('name')">
+                        <if test="sortValue.equals('true')">
+                            ORDER BY e.emp_name ASC
+                        </if>
+                        <if test="sortValue.equals('false')">
+                            ORDER BY e.emp_name DESC
+                        </if>
+                    </when>
+                    <when test="sortName.equals('dept')">
+                        <if test="sortValue.equals('true')">
+                            ORDER BY d.dept_name ASC
+                        </if>
+                        <if test="sortValue.equals('false')">
+                            ORDER BY d.dept_name DESC
+                        </if>
+                    </when>
+                    <!-- Default sorting if no valid sortName matches -->
+                    <otherwise>
+                        ORDER BY bookmark_active DESC, e.emp_name ASC
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        LIMIT
+            #{start}, 5
+    </select>
+
+    <insert id="insertUserBookmarkByEmpIdAndContactId" parameterType="map">
+        INSERT INTO
+            user_bookmark ( emp_id, contact_id)
+        VALUES
+            ( #{ empId }, #{ contactId });
+
+    </insert>
+    
+    <delete id="deleteUserBookmarkByEmpIdAndContactId" parameterType="map">
+        DELETE FROM
+            user_bookmark
+        WHERE
+            emp_id = #{ empId } AND contact_id = #{ contactId }
+    </delete>
+
+    <select id="findUserBookmarkCount" parameterType="map" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM
+            user_bookmark ub
+        INNER JOIN
+            employee e
+        ON
+            e.emp_id = ub.contact_id
+        INNER JOIN
+            employee_detail ed
+        ON
+            ed.emp_id = e.emp_id
+        WHERE
+            ub.emp_id = #{empId}
+            <choose>
+                <when test="option.equals('all') and keyword.equals('all') or !option.equals('all') and keyword.equals('all')">
+                </when>
+                <otherwise>
+                    <if test="option.equals('name')">
+                        AND e.emp_name LIKE CONCAT('%', #{keyword}, '%')
+                    </if>
+                    <if test="option.equals('email')">
+                        AND e.emp_email LIKE CONCAT('%', #{keyword}, '%')
+                    </if>
+                    <if test="option.equals('phone')">
+                        AND ed.emp_phone LIKE CONCAT('%', #{keyword}, '%')
+                    </if>
+                </otherwise>
+            </choose>
+    </select>
+
+    <update id="updateUserBookmarkByEmpIdAndContactId" parameterType="map">
+        UPDATE
+            user_bookmark
+        SET
+            <if test="bookmarkActive == false">
+                bookmark_active = true
+            </if>
+            <if test="bookmarkActive == true">
+                bookmark_active = false
+            </if>
+        WHERE
+            emp_id = #{ empId } AND contact_id = #{ contactId }
+    </update>
+
+    <select id="findAllAttendanceStatus" resultType="string">
+        SELECT
+            DISTINCT(attd_status)
+        FROM
+            attendance;
+    </select>
+
+
+
+
+</mapper>

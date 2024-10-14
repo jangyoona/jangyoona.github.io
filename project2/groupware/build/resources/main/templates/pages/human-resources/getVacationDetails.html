@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AdminLTE 3 | Blank Page</title>
+
+  <!-- jQuery -->
+  <script src="/plugins/jquery/jquery.min.js"></script>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>사원 정보 조회</h1>
+            <label>복사된 이메일 임시 저장</label>
+            <div id="copiedEmailsContainer">
+              <textarea id="copiedEmails" rows="4" cols="50" readonly></textarea>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Human resources</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+
+    <section class="content">
+      <!-- Default box -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">사원 검색하기</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">사원 정보</h3>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-sm-6">
+                    <input type="text" id="searchName" class="form-control" placeholder="이름으로 검색하기">
+                  </div>
+                  <div class="col-sm-6">
+                    <button id="searchButton" class="btn btn-primary">검색</button>
+                  </div>
+                </div>
+
+                <div class="card-body scrollable-table">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                      <th>사번</th>
+                      <th>이름</th>
+                      <th>부서</th>
+                      <th>직책</th>
+                      <th>입사일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--리스트 ( script에서 load함 )-->
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+
+        </div>
+        <!-- /.card-body -->
+      </div>
+      <!-- /.card -->
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <!-- Default box -->
+      <div class="card collapsed-card">
+        <div class="card-header">
+          <h3 class="card-title">모든 사원 보기</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">사원 정보</h3>
+                </div>
+                <div class="card-body scrollable-table">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                    <tr>
+                      <th>사번</th>
+                      <th>이름</th>
+                      <th>부서</th>
+                      <th>직책</th>
+                      <th>입사일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <span th:each="employees : ${employees}">
+                    <tr data-widget="expandable-table" aria-expanded="false">
+                      <td th:text="${employees.empId}"></td>
+                      <td th:text="${employees.empName}"></td>
+                      <td th:text="${employees.deptName}"></td>
+                      <td th:text="${employees.positionName}"></td>
+                      <td th:text="${#dates.format(employees.empInDate, 'yyyy-MM-dd')}"></td>
+                    </tr>
+                    <tr class="expandable-body">
+                      <td colspan="5">
+                      <p th:utext="'주소 : ' + ${employees.empAddress} + '<br>' +
+                                   '휴대폰 번호 : ' + ${employees.empPhone} + '<br>' +
+                                   '생년월일 : ' + ${#dates.format(employees.empBirthDate, 'yyyy-MM-dd')} + '<br>' +
+                                   '이메일 : ' + ${employees.empEmail}"></p>
+                        <button class="btn btn-secondary copy-email" th:data-email="${employees.empEmail}">이메일 복사</button>
+                        <button class="btn btn-primary send-email">메일 보내기</button>
+                      </td>
+                    </tr>
+                    </span>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+          Footer
+        </div>
+        <!-- /.card-footer-->
+      </div>
+      <!-- /.card -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+
+
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script type="text/javascript">
+  $(function () {
+  // 현재 페이지의 URL을 가져옵니다.
+  const currentUrl = window.location.href;
+  let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+
+  // URL에서 파라미터 값을 제거합니다.
+  const pathIndex = currentPath.indexOf("?");
+  if (pathIndex != -1) {
+    currentPath = currentPath.substring(0, pathIndex);
+  }
+
+  // 현재 페이지의 URL과 sidebar의 URL을 비교합니다.
+  $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+  document.querySelectorAll('.send-email').forEach(function(button) {
+    button.addEventListener('click', function() {
+      window.location.href = '/mailbox/write';
+    });
+  });
+
+  document.querySelectorAll('.copy-email').forEach(function(button) {
+    button.addEventListener('click', function() {
+      const email = button.getAttribute('data-email');
+      navigator.clipboard.writeText(email).then(function() {
+        alert('이메일이 복사되었습니다: ' + email);
+
+        let textareaElement = document.getElementById('copiedEmails');
+        if (!textareaElement) {
+          textareaElement = document.createElement('textarea');
+          textareaElement.id = 'copiedEmails';
+          textareaElement.rows = 4; // initial rows
+          textareaElement.cols = 50; // initial cols
+          textareaElement.readOnly = true;
+          document.getElementById('copiedEmailsContainer').appendChild(textareaElement);
+
+          // Add event listener for copying content on click
+          textareaElement.addEventListener('click', function() {
+            textareaElement.select();
+            document.execCommand('copy');
+            alert('모든 이메일이 복사되었습니다.');
+          });
+        }
+
+        // Append email to the textarea with a newline
+        textareaElement.value = (textareaElement.value ? textareaElement.value + '\n' : '') + email;
+
+        // Adjust the height of the textarea
+        textareaElement.rows = textareaElement.value.split('\n').length;
+
+      }).catch(function(error) {
+        console.error('Error copying text: ', error);
+      });
+    });
+  });
+
+  function performSearch() {
+    const searchName = document.getElementById('searchName').value;
+
+    $.ajax({
+      url: '/search',
+      type: 'GET',
+      data: { searchName: searchName },
+      success: function(data) {
+        const tbody = document.querySelector('tbody');
+        tbody.innerHTML = ''; // Clear existing table rows
+
+        data.forEach(function(employee) {
+          const employeeRow = `
+            <tr data-widget="expandable-table" aria-expanded="false">
+              <td>${employee.empId}</td>
+              <td>${employee.empName}</td>
+              <td>${employee.deptName}</td>
+              <td>${employee.empPosition}</td>
+              <td>${new Date(employee.empInDate).toLocaleDateString()}</td>
+            </tr>
+            <tr class="expandable-body">
+              <td colspan="5">
+                <p>주소 : ${employee.empAddress}<br>
+                   휴대폰 번호 : ${employee.empPhone}<br>
+                   생년월일 : ${new Date(employee.empBirthDate).toLocaleDateString()}<br>
+                   이메일 : ${employee.empEmail}</p>
+                <button class="btn btn-secondary copy-email" data-email="${employee.empEmail}">이메일 복사</button>
+                <button class="btn btn-primary send-email">메일 보내기</button>
+              </td>
+            </tr>
+          `;
+          tbody.insertAdjacentHTML('beforeend', employeeRow);
+        });
+
+        // Re-bind event listeners for newly added buttons
+        document.querySelectorAll('.copy-email').forEach(function(button) {
+          button.addEventListener('click', function() {
+            const email = button.getAttribute('data-email');
+            navigator.clipboard.writeText(email).then(function() {
+              alert('이메일이 복사되었습니다: ' + email);
+              let textareaElement = document.getElementById('copiedEmails');
+              if (!textareaElement) {
+                textareaElement = document.createElement('textarea');
+                textareaElement.id = 'copiedEmails';
+                textareaElement.rows = 4; // initial rows
+                textareaElement.cols = 50; // initial cols
+                textareaElement.readOnly = true;
+                document.getElementById('copiedEmailsContainer').appendChild(textareaElement);
+
+                // Add event listener for copying content on click
+                textareaElement.addEventListener('click', function() {
+                  textareaElement.select();
+                  document.execCommand('copy');
+                  alert('모든 이메일이 복사되었습니다.');
+                });
+              }
+
+              // Append email to the textarea with a newline
+              textareaElement.value = (textareaElement.value ? textareaElement.value + '\n' : '') + email;
+
+              // Adjust the height of the textarea
+              textareaElement.rows = textareaElement.value.split('\n').length;
+
+            }).catch(function(error) {
+              console.error('Error copying text: ', error);
+            });
+          });
+        });
+
+        document.querySelectorAll('.send-email').forEach(function(button) {
+          button.addEventListener('click', function() {
+            window.location.href = '/mailbox/write';
+          });
+        });
+
+      },
+      error: function(error) {
+        console.error('Error fetching search results:', error);
+      }
+    });
+  }
+
+  document.getElementById('searchButton').addEventListener('click', performSearch);
+
+  document.getElementById('searchName').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent the default form submission
+      performSearch(); // Trigger the search function
+    }
+  });
+});
+</script>
+
+</body>
+</html>

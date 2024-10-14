@@ -1,0 +1,74 @@
+<div th:each="meeting, meetingState : ${meetings}" class="card collapsed-card" xmlns:th="http://www.thymeleaf.org">
+    <div th:if="${meeting.scheduleBoardActive == true}" class="card-header">
+        <h3 class="card-title" th:text='|${ #dates.format(meeting.scheduleBoardMeetingDate, "yyyy-MM-dd")} 일자 회의|'></h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    </div>
+    <div th:if="${meeting.scheduleBoardActive == false}" class="card-header">
+        <h3 class="card-title">삭제된 회의</h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool meeting-fix-button"
+                    th:if="${ #ctx.session.loginUser.empId == meeting.employee.empId }"
+                    th:data-scheduleboardno='${ meeting.scheduleBoardNo }'>
+                <i class="fas fa-tools"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body" style="display: none;">
+        <!-- 제목, 작성날짜, 작성자, 내용, 수정Btn, 더보기Btn, 글쓰기Btn -->
+        <form class="excelForm" action="/excel/download" method="GET">
+            <input type="hidden" th:class="|excel${meetingState.index}|" th:value='${ #dates.format(meeting.scheduleBoardMeetingDate, "yyyy-MM-dd")}'>
+            <input type="hidden" th:class="|excel${meetingState.index}|" th:value='${ meeting.employee.empName }'>
+            <input type="hidden" th:class="|excel${meetingState.index}|" th:value='${ meeting.deptName }'>
+            <input type="hidden" th:class="|excel${meetingState.index}|" th:value='${ #dates.format(meeting.scheduleBoardWriteDate, "yyyy-MM-dd")}'>
+            <input type="hidden" th:class="|excel${meetingState.index}|" th:value='${ meeting.scheduleBoardContent }'>
+        </form>
+            <div class="body-container">
+                <div class="body-header">
+                    <h3 th:text="${meeting.employee.empName}"></h3>
+                    <h5 th:text="${meeting.deptName}"></h5>
+                    <div th:text='${ #dates.format(meeting.scheduleBoardWriteDate, "yyyy-MM-dd")}'></div>
+                </div>
+                <div class="body-content" th:text="${meeting.scheduleBoardContent}">
+                </div>
+                <form id="meetingUpdateForm" class="meetingUpdateForm" method="POST" action="modify-meeting">
+                    <input type="hidden" name="scheduleBoardNo" class="meeting-no" th:data-scheduleboardno='${ meeting.scheduleBoardNo }' th:value='${ meeting.scheduleBoardNo }' />
+                    <input type="hidden" name="scheduleNo" th:value='${ meeting.scheduleNo }' />
+                    <input type="hidden" name="empId" th:if="${ #ctx.session.loginUser != null }" th:value='${ #ctx.session.loginUser.empId }' />
+                    <input type="hidden" name="scheduleCategoryNo" value='2' />
+                    <textarea class="form-control meeting-timeline-textarea" name="scheduleBoardContent" rows="6" style="display: none; resize: none;" th:text="${meeting.scheduleBoardContent}"></textarea>
+                    <div class="card-btn-container"
+                         th:if="${ #ctx.session.loginUser.empId == meeting.employee.empId }">
+                        <button type="button" class="btn btn-info meeting-edit-button" th:data-idx="${ meetingState.index }">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-success meeting-submit-button" th:data-idx="${ meetingState.index }" style="display: none;">
+                            <i class="far fa-paper-plane"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary meeting-download-button" th:data-idx="${ meetingState.index }">
+                            <i class="fas fa-file-excel"></i>
+                        </button>
+                        <button type="button" class="btn btn-warning meeting-cancel-button" th:data-idx="${ meetingState.index }" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger meeting-delete-button" th:data-idx="${ meetingState.index }">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+    </div>
+
+    <!-- /.card-body -->
+</div>
+<div class="btn-container">
+    <button class="more-btn">
+        <i class="fas fa-chevron-circle-down"></i>
+    </button>
+    <button th:each="employee : ${project.employees}" th:if="${employee.empId == #ctx.session.loginUser.empId}" class="write-meeting-btn">
+        <i class="fas fa-pencil-alt"></i>
+    </button>
+</div>

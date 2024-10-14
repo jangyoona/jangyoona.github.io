@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.HrMapper">
+
+    <!--사원 연차 갯수를 증가시키는 쿼리-->
+    <update id="updateAnnualCountPlusAllEmployee" parameterType="AnnualDto">
+
+        UPDATE annual
+
+        SET annual_count = annual_count + 1
+
+    </update>
+
+    <update id="updateAnnualCountMinus" parameterType="int">
+
+        UPDATE annual
+
+        SET annual_count = annual_count - 1
+
+        WHERE emp_id = #{ empId }
+
+    </update>
+
+    <!--휴가 등록하는 쿼리-->
+    <insert id="insertAttendanceLeaves" parameterType="hashmap">
+
+        INSERT INTO attendance (
+        emp_id,
+        attd_date,
+        attd_status,
+        attd_detail
+        )
+
+        VALUES (
+        #{ empId },
+        #{ date },
+        '휴가',
+        #{ detail }
+        )
+    </insert>
+
+    <!-- 사원정보를 모두 불러오는 쿼리 -->
+    <select id="findAllEmployee" parameterType="EmployeeDto">
+
+        SELECT
+        e.emp_id empId,
+        e.dept_no deptNo,
+        e.emp_active empActive,
+        e.emp_regidate empRegiDate,
+        e.emp_name empName,
+        e.emp_email empEmail,
+        d.dept_name deptName,
+        ed.emp_birthdate empBirthDate,
+        ed.emp_phone empPhone,
+        ed.emp_indate empInDate,
+        ed.emp_outdate empOutDate,
+        ed.emp_address empAddress,
+        ed.emp_address_detail empAddressDetail,
+        p.position_name positionName
+
+        FROM
+        employee e
+
+        INNER JOIN
+        department d ON e.dept_no = d.dept_no
+
+        INNER JOIN
+        position p ON e.position_no = p.position_no
+
+        INNER JOIN
+        employee_detail ed ON e.emp_id = ed.emp_id
+
+        ORDER BY p.position_no DESC
+
+    </select>
+
+    <!-- 사원 총 수 조회 -->
+    <select id="selectEmployeesCount" parameterType="hashmap" resultType="int">
+        SELECT
+            COUNT(*)
+
+        FROM
+            employee e
+
+        INNER JOIN
+            department d ON e.dept_no = d.dept_no
+
+        INNER JOIN
+            position p ON e.position_no = p.position_no
+
+        INNER JOIN
+            employee_detail ed ON e.emp_id = ed.emp_id
+        <where>
+            <choose>
+                <when test="selectValue == 0 or searchValue.equals('all')">
+                </when>
+                <when test="selectValue == 1">
+                    e.emp_id LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 2">
+                    e.emp_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 3">
+                    d.dept_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 4">
+                    p.position_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <!-- 사원 조회 with 페이징 -->
+    <select id="selectEmployees" parameterType="hashmap" resultType="EmployeeDto">
+        SELECT
+            e.emp_id empId,
+            e.dept_no deptNo,
+            e.emp_active empActive,
+            e.emp_regidate empRegiDate,
+            e.emp_name empName,
+            e.emp_email empEmail,
+            d.dept_name deptName,
+            ed.emp_birthdate empBirthDate,
+            ed.emp_phone empPhone,
+            ed.emp_indate empInDate,
+            ed.emp_outdate empOutDate,
+            ed.emp_address empAddress,
+            ed.emp_address_detail empAddressDetail,
+            p.position_name positionName
+
+        FROM
+            employee e
+
+        INNER JOIN
+            department d ON e.dept_no = d.dept_no
+
+        INNER JOIN
+            position p ON e.position_no = p.position_no
+
+        INNER JOIN
+            employee_detail ed ON e.emp_id = ed.emp_id
+        <where>
+            <choose>
+                <when test="selectValue == 0 or searchValue.equals('all')">
+                </when>
+                <when test="selectValue == 1">
+                    e.emp_id LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 2">
+                    e.emp_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 3">
+                    d.dept_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+                <when test="selectValue == 4">
+                    p.position_name LIKE CONCAT('%', #{ searchValue }, '%')
+                </when>
+            </choose>
+        </where>
+        ORDER BY
+            p.position_no DESC
+        LIMIT
+            #{start}, 9
+    </select>
+
+    <!--사원 이름으로 검색하는 쿼리-->
+    <select id="findEmployeeByEmpName" parameterType="EmployeeDto">
+
+        SELECT
+        e.emp_id empId,
+        e.dept_no deptNo,
+        e.emp_active empActive,
+        e.emp_regidate empRegiDate,
+        e.emp_name empName,
+        e.emp_email empEmail,
+        d.dept_name deptName,
+        ed.emp_birthdate empBirthDate,
+        ed.emp_phone empPhone,
+        ed.emp_indate empInDate,
+        ed.emp_outdate empOutDate,
+        ed.emp_address empAddress,
+        ed.emp_address_detail empAddressDetail
+
+        FROM
+        employee e
+
+        INNER JOIN
+        department d ON e.dept_no = d.dept_no
+
+        LEFT JOIN
+        employee_detail ed ON e.emp_id = ed.emp_id
+
+        WHERE e.emp_name LIKE CONCAT('%', #{empName}, '%')
+
+    </select>
+
+    <select id="findAuunalCountByEmpId" resultType="int">
+
+        SELECT
+        annual_count annualCount
+
+        FROM
+        annual a
+
+        INNER JOIN employee e ON a.emp_id = e.emp_id
+
+        WHERE e.emp_id = #{empId}
+
+    </select>
+
+    <select id="findApprovalLeavesByActive" resultType="ApprovalDto">
+
+        SELECT
+        emp_id empId,
+        approval_form approvalForm,
+        approval_title approvalTitle,
+        approval_content approvalContent,
+        approval_active approvalActive,
+        active
+
+        FROM approval
+
+        WHERE
+        approval_form = '휴가 신청서' AND
+        approval_active = '결재승인' AND
+        active = '0'
+
+    </select>
+</mapper>

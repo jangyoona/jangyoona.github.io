@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>마이페이지</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <style>
+    .right-a-tag{
+        color: dimgray;
+        margin-left: 3%;
+
+    }
+
+    .card-todo-container {
+      display: grid;
+      row-gap: 2rem;
+    }
+
+    .todo-container {
+      display: grid;
+      grid-template-rows: repeat(2, 100px) 40px 700px;
+      row-gap: 2rem;
+      padding-bottom: 4rem;
+    }
+
+    .input-group-prepend {
+        height: 4vh;
+        padding-left: 5%;
+    }
+
+    .list-container {
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <!-- Navbar -->
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- /.navbar -->
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="col">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1></h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item active">프로필</li>
+              <th:block>
+                <li th:if="${ #ctx.session.loginUser == null }" class="breadcrumb-item" style="cursor: pointer;"><a th:href="@{/account/login}">로그인</a></li>
+                <li th:unless="${ #ctx.session.loginUser == null }" class="breadcrumb-item"><a th:href="@{/account/logout}" style="cursor: pointer;">로그아웃</a></li>
+              </th:block>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row d-flex justify-content-center">
+          <div class="col-md-4 card-todo-container" style="margin: 0 5%;">
+
+            <!-- Profile Image -->
+            <div class="card card-primary card-outline" style="margin: 0 5%;">
+              <div class="card-body box-profile">
+                <div class="text-center">
+                  <img class="profile-user-img img-fluid img-circle"
+                       src="/dist/img/user4-128x128.jpg"
+                       alt="User profile picture">
+                </div>
+
+                <h3 class="profile-username text-center" th:text="${ #ctx.session.loginUser.empName }"></h3>
+
+<!--                  <span th:if="${ attendanceStatus == '근무중' ||  attendanceStatus == '근무중(지각)' }">-->
+<!--                    <div style="width: 10px; height: 10px; border-radius: 50%; background-color: green; position: relative; left: 40%; top: 17px;"></div>-->
+<!--                  </span>-->
+
+<!--                  <span th:unless="${ attendanceStatus == '근무중' || attendanceStatus == '근무중(지각)' }">-->
+<!--                    <div style="width: 10px; height: 10px; border-radius: 50%; background-color: rgb(92, 92, 92); position: relative; left: 40%; top: 17px;"></div>-->
+<!--                  </span>-->
+
+<!--                <p class="text-muted text-center">-->
+<!--                  <span class="text-muted text-center" style="margin-left:10px;" th:text="|${ attendanceStatus == '근무중' || attendanceStatus == '근무중(지각)' ? '근무중' : '오프라인' }|"></span>-->
+<!--                </p>-->
+
+
+
+                <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                    <th:block th:switch="${ #ctx.session.loginUser.deptNo }">
+  <!--                    <b>부서</b><a class="float-right" th:if="${ #ctx.session.loginUser.deptNo == 1 }" th:text="1부서">개발1팀</a>-->
+                        <th:span th:case="1"><b>부서</b><a class="float-right">1부서</a></th:span>
+                        <th:span th:case="2"><b>부서</b><a class="float-right">퍼블리셔</a></th:span>
+                        <th:span th:case="3"><b>부서</b><a class="float-right">프론트엔드</a></th:span>
+                        <th:span th:case="4"><b>부서</b><a class="float-right">백엔드</a></th:span>
+                        <th:span th:case="5"><b>부서</b><a class="float-right">DB</a></th:span>
+                    </th:block>
+                    </li>
+                  <li class="list-group-item">
+                    <b>직급</b> <a class="float-right" th:text="${ #ctx.session.loginUser.empPosition }"></a>
+                  </li>
+                  <li class="list-group-item">
+                    <b>입사일</b> <a class="float-right" th:text="${ #dates.format( #ctx.session.loginUser.employeeDetail.empInDate, 'yyyy-MM-dd')}"></a>
+                  </li>
+                </ul>
+
+                <a href="#" class="btn btn-primary btn-block"><b>Follow</b></a>
+              </div>
+              <!-- /.card-body -->
+            </div>
+
+            <!-- /.card -->
+            <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 100% !important; margin-top: 10%;"/>
+
+            <!-- yoona togle -->
+            <div class="todo-container">
+              <h1 style="text-align: center; margin-top: 10%;">Todo-List</h1>
+              <button type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-default" style="position: relative; left: 25%; width: 50%; height:60px; margin-bottom: 5%;">
+                Todo Add
+              </button>
+                <div class="input-group-prepend">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        정렬
+                    </button>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item sortKeyword-btn" value="1">최신순</button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item sortKeyword-btn" value="2">오래된순</button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item sortKeyword-btn" value="3">마감일자순</button>
+                    </div>
+                </div>
+
+
+
+              <div class="list-container">
+                  <div class="col-md-13" style="margin: 0 5% 15% 5%;" th:if="${ #lists.isEmpty(scheduleList) }">
+                    <div class="card card-primary">
+                      <div class="card-header">
+                        <h3 class="card-title"></h3>
+                        <div class="card-tools">
+                          <button type="button" class="btn btn-tool" data-card-widget="remove">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="card-body">
+                        <div style="text-align:center; color: gray; margin: 20% 10%;">Todo Add 버튼을 눌러 일정을 추가해 주세요</div>
+                      </div>
+                    </div>
+                  </div>
+
+
+              </div>
+                  <table id="todo-list" style="width:480px;">
+
+                  </table>
+            </div>
+
+      </div>
+            <!-- /yoona togle -->
+
+
+            <!-- About Me Box -->
+          <div class="col-md-5">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">About Me 뭘 조회해야 하나</h3>
+              </div>
+
+              <!--  card-header  -->
+              <div class="card-body">
+<!--                <p class="text-muted">-->
+<!--                  B.S. in Computer Science from the University of Tennessee at Knoxville-->
+<!--                </p>-->
+                <i class="fas fa-user mr-1"></i><a href="my-information" class="right-a-tag">내 정보 조회</a>
+<!--                <i class="fas fa-user mr-1"></i><a th:href="@{my-information}" class="right-a-tag">내 정보 조회</a>-->
+                <hr>
+                <i class="far fa-file-alt mr-1"></i><a th:href="|/pages/attendance/attendance-list?empId=${ #ctx.session.loginUser.empId }|" class="right-a-tag">근태현황 조회</a>
+                <hr>
+                <i class="far fa-file-alt mr-1"></i><a class="right-a-tag" data-toggle="modal" data-target="#modal-xl" style="cursor: pointer;">모달 근태</a>
+                <hr>
+                <i class="far fa-file-alt mr-1"></i><a href="/mailbox/list" class="right-a-tag">메일함</a>
+                <hr>
+                <i class="fas fa-map-marker-alt mr-1"></i><a href="login-attempt" class="right-a-tag">로그인 기록 조회</a>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!--/.card -->
+          </div>
+        </div>
+          <!-- /.col -->
+
+            <!-- /.nav-tabs-custom -->
+          <!-- /.col -->
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+<!-- 모달 근태 -->
+<div class="modal fade" id="modal-xl">
+  <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title">개인 근태 현황</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <p>One fine body&hellip;</p>
+
+                  <div class="card-body table-responsive p-0">
+                      <table class="table table-hover text-nowrap">
+                          <thead>
+                          <tr>
+                              <th>사번</th>
+                              <th>이름</th>
+                              <th>날짜</th>
+                              <th>출근시간</th>
+                              <th>퇴근시간</th>
+                              <th>상태</th>
+                              <th>사유</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          <tr th:each="attempt, start :${ loginAttempt }">
+                              <td th:text="|${ start.count }|"></td>
+                              <td th:text="${ #dates.format(attempt.timestamp, 'yyyy-MM-dd hh:mm:ss') }"></td>
+                              <td th:text="${ attempt.diff == 'login' ? '로그인' : '로그아웃' }"></td>
+                              <td th:text="${ attempt.ipAddress }"></td>
+                              <td th:text="${ attempt.success == true ? '성공' : '실패' }"></td>
+                              <td th:text="${ attempt.success == true ? '성공' : '실패' }"></td>
+                              <td th:text="${ attempt.success == true ? '성공' : '실패' }"></td>
+                          </tr>
+                          </tbody>
+                      </table>
+                  </div>
+
+          </div>
+
+          </div>
+          <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+      </div>
+
+  </div>
+
+</div>
+<!-- /모달 근태-->
+
+<!-- Todo-List 추가 모달  -->
+<div class="modal fade" id="modal-default">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Todo-List-Add</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <!-- 모달창 바디 start -->
+      <form action="my-page" method="post" id="todo-add-form">
+          <div class="modal-body">
+            <div class="col">
+              <div class="card card-primary">
+                <div class="card-body">
+                  <input type="hidden" name="empId" id="empId" th:value="${ #ctx.session.loginUser.empId }">
+                  <div class="form-group">
+                    <label for="personalScheduleStartDate">시작일</label>
+                    <input type="date" name="personalScheduleStartDate" id="personalScheduleStartDate" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="personalScheduleEndDate">종료일</label>
+                    <input type="date" name="personalScheduleEndDate" id="personalScheduleEndDate" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="personalScheduleContent">내용</label>
+                    <textarea name="personalScheduleContent" id="personalScheduleContent" class="form-control" rows="4" placeholder="내용을 입력하세요" required ></textarea>
+                  </div>
+
+              <!-- 모달창 바디 and -->
+            <div class="modal-footer"> <!-- justify-content-between << 각각 양쪽끝에 배치-->
+              <button type="submit" class="btn btn-primary" id="submit-btn">저장</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+            </div>
+       </div></div></div></div>
+      </form>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /Todo-List 추가 모달  -->
+
+<div th:replace="~{/modules/main-footer}"></div>
+
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script type="text/javascript" th:inline="javascript">
+  $(function() {
+
+      $('#todo-list').load('todo-list');
+
+      $('#todo-list').on('click', '.todo-remove-btn', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const scheduleNo = $(this).data('schedule-no');
+            console.log(scheduleNo);
+
+            if(confirm('해당 메모를 삭제하시겠습니까?')) {
+                $.ajax({
+                    "url" : "todo-delete",
+                    "data" : { 'scheduleNo' : scheduleNo },
+                    "success" : function(result, status, xhr) {
+                          if(result === 'success') {
+                              alert('삭제 완료되었습니다');
+                              $('#todo-list').load('todo-list');
+                          } else {
+                              alert('삭제 도중 오류가 발생했습니다');
+                          }
+                    },
+                    "error" : function( xhr, status, err) {
+                          alert('에러구역');
+                    }
+
+                });
+            }
+      });
+
+      $('#submit-btn').on('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const start = $('#personalScheduleStartDate').val();
+            const end = $('#personalScheduleEndDate').val();
+            const content = $('#personalScheduleContent').val().trim();
+            const empId = $('#empId').val();
+
+            if(start == '' || end == '' || content == '') {
+                  alert('빈 입력창이 있습니다');
+                  return;
+            }
+
+            if(confirm('등록하시겠습니까?')) {
+                    $.ajax({
+                        "url" : "todo-add",
+                        "data" : {
+                                    "personalScheduleStartDate" : start,
+                                    "personalScheduleEndDate" : end,
+                                    "personalScheduleContent" : content,
+                                    "empId" : empId
+                                },
+                        "success" : function(result, status, xhr) {
+                              if(result === 'success') {
+                                  alert('등록이 완료되었습니다.');
+                                  $('#todo-list').load('todo-list');
+                                  $('#personalScheduleStartDate').val('');
+                                  $('#personalScheduleEndDate').val('');
+                                  $('#personalScheduleContent').val('');
+                                  $('.modal').modal('hide');
+                              } else {
+                                  alert('등록 도중 오류가 발생했습니다');
+                              }
+                        },
+                        "error" : function( xhr, status, err) {
+                              alert('에러구역');
+                        }
+
+                  });
+
+            }
+
+      });
+
+      $('.sortKeyword-btn').on('click', function(e) {
+            const keyword = $(this).val();
+            console.log(keyword);
+            $('#todo-list').load('todo-list?sortKeyword=' + keyword);
+
+      });
+
+
+});
+
+
+</script>
+</body>
+</html>

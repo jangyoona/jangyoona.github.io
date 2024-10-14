@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>사원 등록</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition register-page">
+<div class="register-box">
+    <div class="register-logo">
+        <b>사원 등록</b>
+    </div>
+
+    <div class="card">
+        <div class="card-body register-card-body">
+            <p class="login-box-msg">새로운 사원을 등록하세요</p>
+
+            <form action="/account/register" method="post" enctype="multipart/form-data">
+
+                <label>사번</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="empId" id="empId" required="" placeholder="사번" readonly th:value="${newEmpId}">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <label>사원 이름</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="empName" id="empName" required="" placeholder="사원 이름을 입력하세요">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <label>비밀번호(임시)</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="empPasswd" name="empPasswd" placeholder="임시 비밀번호" readonly>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" class="form-control" name="empPosition" id="empPosition" value="더미데이터">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>직급</label>
+                            <select class="form-control select2" name="positionNo" id="positionNo" style="width: 100%;">
+                                <option th:each="position : ${position}" th:value="${position.positionNo}" th:text="${position.positionName}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>부서</label>
+                            <select class="form-control select2" name="deptNo" id="deptNo" style="width: 100%;">
+                                <option th:each="department : ${department}" th:value="${department.deptNo}" th:text="${department.deptName}"></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <label>생년월일</label>
+                <div class="input-group mb-3">
+                    <input type="date" class="form-control" name="empBirthDate" required="" placeholder="생년월일">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                        </div>
+                    </div>
+                </div>
+                <label>연락처</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="empPhoneFormatted" id="empPhone" required="" placeholder="연락처" minlength="9" maxlength="13" oninput="formatPhoneNumber(this)">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="empPhone" id="empPhoneHidden">
+                <label>이메일</label>
+                <div class="input-group mb-3">
+                    <input type="email" class="form-control" id="empEmail" name="empEmail" required="" placeholder="이메일">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-envelope"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="button" class="btn btn-block btn-default" onclick="sample4_execDaumPostcode()" value="우편번호 찾기"><br>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="sample4_postcode" required="" placeholder="우편번호">
+                    <div class="input-group-text">
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="sample4_roadAddress" required="" name="empAddress" placeholder="도로명주소">
+                    <div class="input-group-text">
+                    </div>
+                </div>
+                <label>상세주소</label>
+                <div class="input-group mb-3">
+                    <span id="guide" style="color:#999;display:none"></span>
+                    <input type="text" class="form-control" id="sample4_detailAddress" name="empAddressDetail" placeholder="상세주소" required="">
+                    <div class="input-group-text">
+                    </div>
+                </div>
+                <label>입사일</label>
+                <div class="input-group mb-3">
+                    <input type="date" class="form-control" name="empInDate" id="empInDate" required="" placeholder="입사일">
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                        </div>
+                    </div>
+                </div>
+                <label>입사 서류 첨부</label>
+                <div class="input-group mb-3">
+                    <input type="file" class="form-control" name="empFiles" id="empFiles" multiple>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-file-upload"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary btn-block">사원 등록</button>
+                    </div>
+                </div>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/home" class="text-center">홈으로 가기</a>
+            </div>
+        </div>
+        <!-- /.form-box -->
+    </div><!-- /.card -->
+</div>
+<!-- /.register-box -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+       // 난수 생성으로 총 10자리수(임시)로 이루어진 비밀번호 생성
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+      let tempPassword = '';
+      for (let i = 0; i < 10; i++) {
+        tempPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // 생성된 값 input
+      document.getElementById('empPasswd').value = tempPassword;
+      /*
+      document.getElementById('temp_password_confirm').value = tempPassword;
+      */
+    });
+    function sample4_execDaumPostcode() {
+          new daum.Postcode({
+              oncomplete: function(data) {
+                  // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                  // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+                  // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                  var roadAddr = data.roadAddress; // 도로명 주소 변수
+                  var extraRoadAddr = ''; // 참고 항목 변수
+
+                  // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                  // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                  if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                      extraRoadAddr += data.bname;
+                  }
+                  // 건물명이 있고, 공동주택일 경우 추가한다.
+                  if(data.buildingName !== '' && data.apartment === 'Y'){
+                     extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                  }
+                  // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                  if(extraRoadAddr !== ''){
+                      extraRoadAddr = ' (' + extraRoadAddr + ')';
+                  }
+
+                  // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                  document.getElementById('sample4_postcode').value = data.zonecode;
+                  document.getElementById("sample4_roadAddress").value = roadAddr;
+                  document.getElementById("sample4_jibunAddress").value = data.jibunAddress;
+
+                  // 참고항목 문자열이 있을 경우 해당 필드에 넣는다.
+                  if(roadAddr !== ''){
+                      document.getElementById("sample4_extraAddress").value = extraRoadAddr;
+                  } else {
+                      document.getElementById("sample4_extraAddress").value = '';
+                  }
+
+                  var guideTextBox = document.getElementById("guide");
+                  // 사용자가 '선택 안함'을 클릭한 경우, 예상 주소라는 표시를 해준다.
+                  if(data.autoRoadAddress) {
+                      var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+                      guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
+                      guideTextBox.style.display = 'block';
+
+                  } else if(data.autoJibunAddress) {
+                      var expJibunAddr = data.autoJibunAddress;
+                      guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
+                      guideTextBox.style.display = 'block';
+                  } else {
+                      guideTextBox.innerHTML = '';
+                      guideTextBox.style.display = 'none';
+                  }
+              }
+          }).open();
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('form').addEventListener('submit', function() {
+            let phoneField = document.getElementById('empPhone');
+            let hiddenPhoneField = document.getElementById('empPhoneHidden');
+            hiddenPhoneField.value = phoneField.value.replace(/\D/g, ''); // 하이픈 제거
+        });
+    });
+    function formatPhoneNumber(input) {
+        const value = input.value.replace(/\D/g, '');
+
+        if (value.length > 13) {
+        value = value.slice(0, 13); // 11자리를 초과하는 경우 잘라내기
+    }
+
+        let formatted = '';
+
+        if (value.length <= 8) {
+            formatted = value.replace(/(\d{4})(\d{4})/, '$1-$2');
+        } else if (value.length === 9) {
+            formatted = value.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+        } else if (value.length === 10) {
+            formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+        } else if (value.length === 11) {
+            formatted = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        }
+
+        input.value = formatted;
+    }
+
+</script>
+</body>
+</html>

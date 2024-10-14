@@ -1,0 +1,174 @@
+.main-container {
+  display: grid;
+  grid-template-rows: 150px 900px 1fr;
+}
+
+.back-btn {
+  position: absolute;
+  right: 5rem;
+  top: 5rem;
+  padding: 1rem;
+  border: 2px solid black;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  color: black;
+}
+
+.back-btn:hover {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 5px 5px 5px rgba(0,0,0,0.5);
+}
+
+.header-container {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid gray;
+}
+
+.meeting-container {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 0.7fr 1fr;
+  column-gap: 3rem;
+  border-bottom: 2px solid #007bff;
+}
+
+.timeline-container {
+  display: grid;
+  grid-template-rows: 500px 100px;
+  row-gap: 1rem;
+}
+
+.timeline-content {
+  border-bottom: 1px solid gray;
+
+}
+
+.timeline-content, .card-container {
+  overflow-y: auto;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-header > h3 {
+    font-size: 1.2rem;
+}
+
+.timeline-body {
+  font-size: 1.2rem;
+}
+
+.timeline-btn-container, .card-btn-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.timeline-btn-container > button {
+  font-size: 0.8rem;
+}
+
+.timeline-write {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.refresh-btn {
+  position: absolute;
+  right: 0;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+
+.refresh-btn:hover {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 5px 5px 5px rgba(0,0,0,0.5);
+}
+
+.form-group {
+  padding-top: 1rem;
+}
+
+.body-container {
+  display: grid !important;
+  grid-template-rows: 100px 1fr 70px;
+  row-gap: 1rem;
+}
+
+.body-header {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.body-content {
+  padding: 2rem 0 2rem 0;
+  border-top: 1px solid gray;
+  border-bottom: 1px solid gray;
+}
+
+.btn-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.btn-container > button {
+  background-color: white;
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px;
+  transition: all 0.3s;
+}
+
+.btn-container > button:hover {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 5px 5px 5px rgba(0,0,0,0.5);
+}
+
+.todo-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+}
+
+.private-container {
+  padding: 2rem 1rem 1rem 1rem;
+}
+
+.private-container > .card {
+  margin-top: 2rem;
+}
+
+.team-progress-container {
+  padding: 2rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  row-gap: 2rem;
+}
+
+.team-progress-container > .project_progress {
+  border: 1px solid gray;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.plus-btn {
+  text-align: end;
+}
+

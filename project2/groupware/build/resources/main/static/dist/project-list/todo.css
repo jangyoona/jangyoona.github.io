@@ -1,0 +1,58 @@
+.main-container {
+    display: grid;
+    grid-template-rows: repeat(2, 50px) 1fr 1fr;
+    row-gap: 2rem;
+    padding-top: 2rem;
+    text-align: center;
+}
+
+#project-no {
+    font-size: 1.5rem;
+    width: 50%;
+    justify-self: center;
+}
+
+.card {
+    display: grid;
+    grid-template-rows: 1fr 50px;
+}
+
+.card-tools {
+    display: flex;
+    justify-content: center;
+}
+
+.card-tools > .pagination {
+    padding-top: 1rem;
+}
+
+.card-tools > .pagination > li > a {
+    font-size: 1rem;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1rem;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.input-container > h4 {
+    padding-bottom: 1rem;
+    color: #007bff;
+}
+
+.input-container .form-group {
+    width: 50%;
+}
+
+.status {
+    font-size: 1.2rem;
+}
+
+.list-container {
+    background-color: #007bff;
+}

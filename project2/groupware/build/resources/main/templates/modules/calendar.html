@@ -1,0 +1,361 @@
+<style>
+    @media (min-width: 768px) {
+            .row {
+                flex-direction: row;
+            }
+
+            .col-md-3 {
+                order: 1;
+            }
+
+            .col-md-9 {
+                order: 2;
+            }
+        }
+
+        /* 모바일 화면용 스타일 */
+        @media (max-width: 767px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .col-md-3 {
+                order: 2;
+            }
+
+            .col-md-9 {
+                order: 1;
+            }
+        }
+</style>
+
+<div class="wrapper">
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="sticky-top mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">DRAG해서 일정추가하기</h4>
+                            </div>
+                            <div class="card-body">
+                                <!-- the events -->
+                                <div id="external-events">
+                                    <div class="external-event bg-success">뭘 넣지</div>
+                                    <div class="external-event bg-warning">이게있을</div>
+                                    <div class="external-event bg-info">필요가 있나</div>
+                                    <div class="external-event bg-primary">알아서 아래에서 </div>
+                                    <div class="external-event bg-danger">입력할텐데</div>
+                                    <div class="checkbox">
+                                        <label for="drop-remove">
+                                            <input type="checkbox" id="drop-remove">
+                                            삭제하기
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">일정 생성하기</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" style="width: 100%; margin-bottom: 10px;">
+                                    <ul class="fc-color-picker" id="color-chooser">
+                                        <li><a class="text-primary" href="#"><i class="fas fa-square"></i></a></li>
+                                        <li><a class="text-warning" href="#"><i class="fas fa-square"></i></a></li>
+                                        <li><a class="text-success" href="#"><i class="fas fa-square"></i></a></li>
+                                        <li><a class="text-danger" href="#"><i class="fas fa-square"></i></a></li>
+                                        <li><a class="text-muted" href="#"><i class="fas fa-square"></i></a></li>
+                                    </ul>
+                                </div>
+                                <!-- /btn-group -->
+                                <div class="input-group">
+                                    <input id="new-event" type="text" class="form-control" placeholder="제목을 입력하세요">
+                                    <div class="input-group-append">
+                                        <button id="add-new-event" type="button" class="btn btn-primary">일정 추가</button>
+                                    </div>
+                                    <!-- /btn-group -->
+                                </div>
+                                <button id="save-calendar" type="button" class="btn btn-primary mt-3">저장하기</button><hr>
+                                <h6>사용법</h6><hr>
+                                <h6>일정 길이(날짜) 늘리기 - 일정의 오른쪽 끝부분잡고 조정</h6><hr>
+                                <h6>일정 제목, 내용 수정 또는 삭제 - 일정 클릭</h6><hr>
+                                <h6>저장하기 버튼을 누르지 않으면 최종 수정이 반영되지 않습니다.</h6><hr>
+                                <h6>all-day일정이 아닌 일정은 day로 들어가서 시간이있는 테이블로 드래그해서 이동 후 밑면잡고 드래그</h6><hr>
+                                <h6>또 다른 사용법 있으면 추가 요망</h6>
+                                <!-- /input-group -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- /.col -->
+                <div class="col-md-9">
+                    <div class="card card-primary">
+                        <div class="card-body p-0">
+                            <!-- THE CALENDAR -->
+                            <div id="calendar"></div>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<!-- Control Sidebar -->
+<aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+</aside>
+<!-- ./wrapper -->
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="eventTitle"></p>
+                <input type="text" id="editTitle" class="form-control" style="display: none;">
+                <p id="eventContent"></p>
+                <textarea id="editContent" class="form-control" style="display: none;" placeholder="내용을 입력하세요"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" id="editEvent">수정</button>
+                <button type="button" class="btn btn-success" id="saveEvent" style="display: none;">확인</button>
+                <button type="button" class="btn btn-danger" id="deleteEvent">삭제</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    $(function () {
+        // 현재 페이지의 URL과 sidebar의 URL을 비교
+        $(".sidebar .nav-item a[href='list']").addClass('active');
+        // refreshCalendar();
+    });
+
+    function refreshCalendar() {
+  // 캘린더 번호를 저장할 변수
+        var calendarNo = /*[[${calendar.calendarNo}]]*/;
+        var empName = /*[[${loginUser.empName}]]*/;
+        var empId = /*[[${loginUser.empId}]]*/;
+        var deptNo = /*[[${loginUser.deptNo}]]*/;
+
+        /* initialize the external events */
+        function ini_events(ele) {
+            ele.each(function () {
+                var eventObject = {
+                    title: $.trim($(this).text()) // use the element's text as the event title
+                }
+                $(this).data('eventObject', eventObject)
+                $(this).draggable({
+                    zIndex: 1070,
+                    revert: true,
+                    revertDuration: 0
+                })
+            })
+        }
+
+        ini_events($('#external-events div.external-event'))
+
+        /* initialize the calendar */
+        var date = new Date();
+        var d = date.getDate(),
+            m = date.getMonth(),
+            y = date.getFullYear();
+
+        var Calendar = FullCalendar.Calendar;
+        var Draggable = FullCalendar.Draggable;
+
+        var containerEl = document.getElementById('external-events');
+        var checkbox = document.getElementById('drop-remove');
+        var calendarEl = document.getElementById('calendar');
+
+        new Draggable(containerEl, {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    title: eventEl.innerText,
+                    backgroundColor: window.getComputedStyle(eventEl, null).getPropertyValue('background-color'),
+                    borderColor: window.getComputedStyle(eventEl, null).getPropertyValue('background-color'),
+                    textColor: window.getComputedStyle(eventEl, null).getPropertyValue('color'),
+                    calendarNo: calendarNo // 조회된 calendarNo 사용
+                };
+            }
+        });
+
+        var calendar = new Calendar(calendarEl, {
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            themeSystem: 'bootstrap',
+            events: /*[[${calendar.events}]]*/, // Thymeleaf 구문으로 서버에서 전달된 이벤트 리스트를 사용
+            editable: true,
+            droppable: true,
+            drop: function (info) {
+                if (checkbox.checked) {
+                    info.draggedEl.parentNode.removeChild(info.draggedEl);
+                }
+            },
+            eventReceive: function(info) {
+                // 드롭 이벤트 발생 시 calendarNo를 추가
+                info.event.setExtendedProp('calendarNo', calendarNo); // 조회된 calendarNo 사용
+            },
+            eventClick: function(info) {
+                // URL 이동을 방지
+                info.jsEvent.preventDefault();
+
+                // 모달의 제목과 내용을 설정
+                $('#eventModalLabel').text('Event Details');
+                $('#eventTitle').text('일정 제목 : ' + info.event.title);
+                $('#editTitle').val(info.event.title).hide();
+                $('#eventContent').text('내용 : ' + (info.event.extendedProps.content || '')).show();
+                $('#editContent').val(info.event.extendedProps.content || '').hide();
+
+                // 모달을 표시
+                $('#eventModal').modal('show');
+
+                // 수정 버튼 클릭 이벤트 핸들러
+                $('#editEvent').off('click').on('click', function() {
+                    $('#eventTitle').hide();
+                    $('#editTitle').show();
+                    $('#eventContent').hide();
+                    $('#editContent').show();
+                    $('#editEvent').hide();
+                    $('#saveEvent').show();
+                });
+
+                // 저장 버튼 클릭 이벤트 핸들러
+                $('#saveEvent').off('click').on('click', function() {
+                    var newTitle = $('#editTitle').val();
+                    var newContent = $('#editContent').val();
+                    if (newTitle) {
+                        info.event.setProp('title', newTitle);
+                        info.event.setExtendedProp('content', newContent);
+                        $('#eventTitle').text('제목 : ' + newTitle).show();
+                        $('#editTitle').hide();
+                        $('#eventContent').text('내용 : ' + newContent).show();
+                        $('#editContent').hide();
+                        $('#editEvent').show();
+                        $('#saveEvent').hide();
+                    }
+                });
+
+                // 삭제 버튼 클릭 이벤트 핸들러
+                $('#deleteEvent').off('click').on('click', function() {
+                    // 여기에 삭제 기능 구현
+                    info.event.remove(); // 캘린더에서 이벤트 삭제
+                    $('#eventModal').modal('hide'); // 모달 닫기
+                    alert('해당 일정을 삭제했습니다.');
+                });
+            }
+        });
+
+        calendar.render();
+
+        // 캘린더가 비어 있는 경우
+        if (!calendarNo) {
+            if (confirm("개인 일정을 생성하시겠습니까?")) {
+                // 서버에 새로운 캘린더와 기본 이벤트를 생성하는 요청을 보냄
+                $.ajax({
+                    url: '/create-calendar',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ calendarTitle: empName + '님의 일정', type: 'personal', empId: empId, deptNo: deptNo }), // 필요한 데이터로 변경
+                    success: function (response) {
+                        alert('개인 캘린더 생성 완료. 일정을 추가하세요');
+                        location.reload(); // 페이지를 새로고침하여 새로운 캘린더를 로드
+                    },
+                    error: function (error) {
+                        alert('Failed to create calendar.');
+                    }
+                });
+            }
+        }
+
+        // Save calendar event
+        $('#save-calendar').on('click', function () {
+            var events = [];
+            calendar.getEvents().forEach(function (event) {
+                events.push({
+                    eventId: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    allDay: event.allDay,
+                    backgroundColor: event.backgroundColor,
+                    borderColor: event.borderColor,
+                    calendarNo: event.extendedProps.calendarNo, // calendarNo를 이벤트 객체에서 가져옵니다.
+                    content: event.extendedProps.content // 내용도 전송
+                });
+            });
+            $.ajax({
+                url: '/calendar-save',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ calendarTitle: empName + '님의 일정', type: 'personal', empId: empId, deptNo: deptNo, calendarNo: calendarNo, events: events }), // Example data, change as needed
+                success: function (response) {
+                    alert('저장 완료');
+                },
+                error: function (error) {
+                    alert('저장 실패');
+                }
+            });
+        });
+
+        /* ADDING EVENTS */
+        var currColor = '#3c8dbc' // Red by default
+        // Color chooser button
+        $('#color-chooser > li > a').click(function (e) {
+            e.preventDefault();
+            // Save color
+            currColor = $(this).css('color');
+            // Add color effect to button
+            $('#add-new-event').css({
+                'background-color': currColor,
+                'border-color': currColor
+            });
+        });
+        $('#add-new-event').click(function (e) {
+            e.preventDefault();
+            // Get value and make sure it is not null
+            var val = $('#new-event').val();
+            if (val.length == 0) {
+                return;
+            }
+
+            // Create events
+            var event = $('<div />');
+            event.css({
+                'background-color': currColor,
+                'border-color': currColor,
+                'color': '#fff'
+            }).addClass('external-event');
+            event.text(val);
+            $('#external-events').prepend(event);
+
+            // Add draggable functionality
+            ini_events(event);
+
+            // Remove event from text input
+            $('#new-event').val('');
+        });
+  }
+</script>

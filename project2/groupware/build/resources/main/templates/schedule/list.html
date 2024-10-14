@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>프로젝트 관리</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Bootstrap Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/dist/project-list/list.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper" style="background-color: white">
+        <div class="option-bar">
+
+            <select class="form-select" aria-label="Default select example">
+                <option value="진행중" selected>진행중</option>
+                <option value="계획중">계획중</option>
+                <option value="완료">완료</option>
+            </select>
+
+            <div class="switch-container">
+                <div class="form-check form-switch" data-index="0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked1">
+                    <label class="form-check-label" htmlFor="flexSwitchCheckChecked">중요도</label>
+                </div>
+                <div class="form-check form-switch" data-index="1">
+                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked3">
+                    <label class="form-check-label" htmlFor="flexSwitchCheckChecked">마감일</label>
+                </div>
+            </div>
+
+            <nav class="navbar bg-body-tertiary search-bar">
+                <form class="container-fluid">
+                    <div class="input-group">
+                        <button type="button" class="input-group-text search-btn" id="basic-addon1">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <input type="text" class="form-control" id="search-input" placeholder="Search" aria-label="Project Name" aria-describedby="basic-addon1">
+                    </div>
+                </form>
+            </nav>
+
+            <nav class="navbar bg-body-tertiary">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="offcanvas offcanvas-end offcanvas-width" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                        <div class="offcanvas-header">
+                            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                        <div class="offcanvas-body">
+                            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="write-project">프로젝트 추가</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" href="list">프로젝트 리스트</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" aria-current="page" th:href="|project-calendar?deptNo=${#ctx.session.loginUser.deptNo}|">프로젝트 캘린더</a>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        부서
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <th:block th:each="dept : ${deptes}">
+                                            <li><a class="dropdown-item" th:href="|list?deptNo=${dept.deptNo}|" th:text="${dept.deptName}"></a></li>
+                                        </th:block>
+                                        <!-- <li>
+                                        <hr class="dropdown-divider">
+                                        </li>
+                                        <li><a class="dropdown-item" href="#">Something else here</a></li> -->
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+        </div>
+
+        <div class="dept">
+            <span th:text="${ dept.deptName }"></span>
+        </div>
+
+        <div class="project-list-container" id="project-list-container">
+            <!-- Project list AND Pagination Btn -->
+        </div>
+
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script th:inline="javascript">
+    $(() => {
+        // 현재 페이지의 URL을 가져옵니다.
+        const currentUrl = window.location.href;
+        let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+        const pathIndex = currentPath.indexOf("?");
+        if (pathIndex != -1 ) {
+            currentPath = currentPath.substring(0, pathIndex);
+        }
+
+        // 현재 페이지의 URL과 sidebar의 URL을 비교
+        $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+        $('.form-check-input').removeAttr('checked');
+        $('#project-list-container').load('project-list?sortIdx=0&deptNo=' + /*[[${ dept.deptNo }]]*/);
+
+        // 프로젝트명 검색 기능
+        let searchValue = '';
+
+        // 진행중/계획중/완료 프로젝트 선택 기능
+        let selectValue = '진행중';
+
+        // Sort 버튼
+        let btnArr = [false, false];
+        let sortIdx = 0;
+
+
+
+        // 프로젝트명 검색 기능
+          $('.search-btn').on('click', (e) => {
+            searchValue = $('#search-input').val();
+
+            $.ajax({
+                "url" : "update-list",
+                "method" : "GET",
+                "success": function(result, status, xhr) {
+                    if (result === "success") {
+                        // 나중에 pageNo도 보내줘야함
+                        $('#project-list-container').load('project-list?searchValue=' + searchValue +
+                                                                        '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                        $('.form-select > option').removeAttr('selected');
+                        $('.form-select > option').eq(0).attr('selected', 'selected');
+                        $('.form-check-input').prop('checked', false);
+                    } else {
+                        alert('실패 1');
+                    }
+                },
+                "error": function(xhr, status, err) {
+                    alert("실패 2");
+                }
+
+            });
+
+          });
+
+
+        // 진행중/계획중/완료 프로젝트 선택 기능
+        $('.form-select').on('change', (e) => {
+            btnArr.forEach((v, i) => {
+                $('.form-check-input').eq(i).prop('checked', false);
+                btnArr[i] = false;
+            });
+
+            selectValue = $('.form-select').val();
+
+            $.ajax({
+                "url" : "update-list",
+                "method" : "GET",
+                "success": function(result, status, xhr) {
+                    if (result === "success") {
+                        // 나중에 pageNo도 보내줘야함
+                        $('#project-list-container').load('project-list?projectStatus=' + selectValue +
+                                                                        '&searchValue=' + searchValue +
+                                                                        '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                    } else {
+                        alert('실패 1');
+                    }
+                },
+                "error": function(xhr, status, err) {
+                    alert("실패 2");
+                }
+
+            });
+        });
+
+
+
+        $('.form-check').on('click', function(e) {
+
+            let idx = Number($(this).attr('data-index'));
+
+            if (btnArr[idx] === true) {
+              btnArr[idx] = false;
+              $('.form-check-input').eq(idx).prop('checked', false);
+              // ajax 기본 정렬
+              $.ajax({
+                    "url" : "update-list",
+                    "method" : "GET",
+                    "success": function(result, status, xhr) {
+                        if (result === "success") {
+                            // 나중에 pageNo도 보내줘야함
+                            $('#project-list-container').load('project-list?sortIdx=0&projectStatus=' + selectValue +
+                                                                            '&searchValue=' + searchValue +
+                                                                            '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                        } else {
+                            alert('실패 1');
+                        }
+                    },
+                    "error": function(xhr, status, err) {
+                        alert("실패 2");
+                    }
+
+              });
+              sortIdx = 0;
+            } else {
+              btnArr.forEach((v, i) => {
+                btnArr[i] = false;
+              });
+              btnArr[idx] = true;
+              $('.form-check-input').prop('checked', false);
+              $('.form-check-input').eq(idx).prop('checked', true);
+              // ajax 해당 버튼 정렬
+              idx++;
+              sortIdx = idx;
+              if (idx === 1) {
+                $.ajax({
+                    "url" : "update-list",
+                    "method" : "GET",
+                    "success": function(result, status, xhr) {
+                        if (result === "success") {
+                            // 나중에 pageNo도 보내줘야함
+                            $('#project-list-container').load('project-list?sortIdx=' + idx +
+                                                              '&projectStatus=' + selectValue +
+                                                              '&searchValue=' + searchValue +
+                                                              '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                        } else {
+                            alert('실패 1');
+                        }
+                    },
+                    "error": function(xhr, status, err) {
+                        alert("실패 2");
+                    }
+
+                });
+              } else if (idx === 2) {
+                $.ajax({
+                    "url" : "update-list",
+                    "method" : "GET",
+                    "success": function(result, status, xhr) {
+                        if (result === "success") {
+                            // 나중에 pageNo도 보내줘야함
+                            $('#project-list-container').load('project-list?sortIdx=' + idx + '&projectStatus=' + selectValue +
+                                                                            '&searchValue=' + searchValue +
+                                                                            '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                        } else {
+                            alert('실패 1');
+                        }
+                    },
+                    "error": function(xhr, status, err) {
+                        alert("실패 2");
+                    }
+
+                });
+              }
+
+
+            }
+        });
+
+        // 페이징 버튼 Ajax
+        $('.project-list-container').on('click', '.page-item', function(e) {
+            let pageNo = $('.paging').data('pageno');
+            const lastPageNo = Math.floor(($('.paging').data('datacount') / 5) + (($('.paging').data('datacount') % 5) > 0 ? 1 : 0));
+            if (/«/.test($(this).text())) pageNo = 1;
+            if ($(this).text() == 'Previous') pageNo = pageNo - 1 < 1 ? 1 : pageNo - 1;
+            if ($(this).text() == 'Next') pageNo = pageNo + 1 > lastPageNo ? lastPageNo : pageNo + 1;
+            if (/»/.test($(this).text())) pageNo = lastPageNo;
+            if (!isNaN($(this).text())) pageNo = $(this).text();
+
+            $.ajax({
+                "url" : "update-list",
+                "method" : "GET",
+                "success": function(result, status, xhr) {
+                    if (result === "success") {
+                        // 나중에 pageNo도 보내줘야함
+                        $('#project-list-container').load('project-list?sortIdx=' + sortIdx + '&projectStatus=' + selectValue +
+                                                                        '&pageNo=' + pageNo +
+                                                                        '&searchValue=' + searchValue +
+                                                                        '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                    } else {
+                        alert('실패 1');
+                    }
+                },
+                "error": function(xhr, status, err) {
+                    alert("실패 2");
+                }
+            });
+
+        });
+
+        // Project 상태 변경 버튼 기능
+        $('.project-list-container').on('click', '.status-button', function(e){
+            const projectNo = $(this).parent().data('projectno');
+            const status = $(this).text();
+            $.ajax({
+                "url" : "modify-project-status",
+                "method" : "POST",
+                "data" : [{ name : "projectNo", value : projectNo },
+                         { name : "status", value : status }],
+                "dataType" : "text",
+                "success": function(result, status, xhr) {
+                    if (result === "success") {
+                        $('#project-list-container').load('project-list?projectStatus=' + selectValue +
+                                                                        '&deptNo=' + /*[[${ dept.deptNo }]]*/"");
+                        $('#search-input').val('');
+                    } else {
+                        alert('실패 1');
+                    }
+                },
+                "error": function(xhr, status, err) {
+                    alert("실패 2");
+                }
+            });
+        });
+
+        // Project 삭제 버튼 기능
+        $('.project-list-container').on('click', '.delete-project-button', function(e) {
+            const projectNo = $(this).parent().data('projectno');
+            const ok = window.confirm('정말 삭제하시겠습니까?');
+            if (ok) {
+                $.ajax({
+                    "url" : "remove-project-status",
+                    "method" : "POST",
+                    "data" : [{ name : "projectNo", value : projectNo }],
+                    "dataType" : "text",
+                    "success": function(result, status, xhr) {
+                        if (result === "success") {
+                            // 나중에 pageNo도 보내줘야함
+                            $('#project-list-container').load('project-list');
+                        } else {
+                            alert('실패 1');
+                        }
+                    },
+                    "error": function(xhr, status, err) {
+                        alert("실패 2");
+                    }
+                });
+            }
+        });
+
+        // Project 수정 페이지로 이동
+        $('.project-list-container').on('click', '.edit-button', function(e) {
+            const projectNo = $(this).parent().data('projectno');
+            location.href = 'edit-project?projectNo=' + projectNo;
+        });
+
+        // Project-detail로 이동 Btn
+        $('.project-list-container').on('click', '.move-detail-button', function(e) {
+            location.href = "project-detail?projectNo=" + $(this).parent().data('projectno');
+        });
+
+
+        empId = /*[[${session.loginUser.empId}]]*/ 0;initializeWebSocket(empId);
+    });
+</script>
+
+</body>
+</html>

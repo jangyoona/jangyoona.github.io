@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Read Mail</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <style>
+    .nav-link {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>상세메일</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">받은메일함</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-3">
+            <a href="/mailbox/all" class="btn btn-primary btn-block mb-3">메일함</a>
+            <div th:replace="~{/modules/mail-sidebar}"></div>
+          </div>
+          <!-- /.col -->
+          <div class="col-md-9">
+            <div class="card card-primary card-outline">
+              <div class="card-header">
+                <h3 class="card-title">받은메일</h3>
+
+                <div class="card-tools">
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body p-0" id="printableArea">
+                <div class="mailbox-read-info">
+                  <h4 th:text="'제목: ' + ${ mail.emailTitle }"></h4>
+                  <h6 th:text="'보낸사람: ' + ${mail.emailFrom} + ' (' +${ mail.empPosition}+'-'+${mail.empName} + ')' "></h6>
+                    <span class="mailbox-read-time float-right" th:text='${ #dates.format(mail.emailWriteDate, "yyyy-MM-dd hh:mm:ss") }'></span></h6>
+                  <h6 th:text="'받은사람: ' + ${mail.emailTo}"></h6>
+                </div>
+                <!-- /.mailbox-read-info -->
+                <div class="mailbox-controls with-border text-center" id="email-details"
+                     th:data-email-no="${mail.emailNo}"
+                     th:data-email-from="${mail.emailFrom}"
+                     th:data-email-to="${mail.emailTo}">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-default btn-sm btn-redirect" data-container="body" title="REDIRECT">
+                      <i class="fa fa-paper-plane"></i> 답장
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-mark"
+                            th:if="${(mail.emailFromLike == true and #ctx.session.loginUser.empEmail == mail.emailFrom) or
+                                    (mail.emailToLike == true and #ctx.session.loginUser.empEmail == mail.emailTo)}"
+                            data-container="body" title="LIKE">
+                      <i class="fas fa-star"></i> 중요메일
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-remove-mark"
+                            th:if="${(mail.emailFromLike == false and #ctx.session.loginUser.empEmail == mail.emailFrom) or
+                                    (mail.emailToLike == false and #ctx.session.loginUser.empEmail == mail.emailTo)}"
+                            data-container="body" title="REMOVE-LIKE">
+                      <i class="fa fa-ban"></i> 중요메일 취소
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-delete" data-container="body" title="Delete">
+                      <i class="far fa-trash-alt"></i> 삭제
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-reply" data-container="body" title="Reply">
+                      <i class="fas fa-reply"></i> 이전메일
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm btn-share" data-container="body" title="Forward">
+                      <i class="fas fa-share"></i> 다음메일
+                    </button>
+                  </div>
+                  <!-- /.btn-group -->
+                  <button type="button" class="btn btn-default btn-sm btn-print" title="Print">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
+                <!-- /.mailbox-controls -->
+                <div class="mailbox-read-message">
+                  <p th:utext="${ mail.emailContent }"></p>
+                </div>
+                <!-- /.mailbox-read-message -->
+              </div>
+              <!-- /.card-body -->
+              <div class="card-footer bg-white">
+                <ul class="mailbox-attachments d-flex align-items-stretch clearfix">
+                  <ul>
+                    <li th:each="attach : ${mail.attachments}" th:if="${attach.emailUserFileName} != null">
+                      <div class="mailbox-attachment-info">
+                        <a th:href="@{download(attachno=${attach.emailAttachNo})}"
+                           onclick="redirectAfterDownload(${mail.emailNo});"
+                           th:text="${attach.emailUserFileName}"
+                           class="mailbox-attachment-name"></a>
+                        <a th:href="@{download(attachno=${attach.emailAttachNo})}"
+                           onclick="redirectAfterDownload(${mail.emailNo});"
+                           class="btn btn-default btn-sm float-right">
+                          <i class="fas fa-cloud-download-alt"></i>
+                        </a>
+                      </div>
+                    </li>
+                  </ul>
+                </ul>
+              </div>
+              <!-- /.card-footer -->
+              <div class="card-footer">
+                <div class="float-right">
+                  <button type="button" class="btn btn-default btn-reply"><i class="fas fa-reply-detail"></i> 이전메일</button>
+                  <button type="button" class="btn btn-default btn-share"><i class="fas fa-share-detail"></i> 다음메일</button>
+                </div>
+                <button type="button" class="btn btn-default btn-delete"><i class="far fa-trash-alt"></i> 삭제</button>
+                <button type="button" class="btn btn-default btn-print"><i class="fas fa-print"></i> 출력</button>
+              </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script th:inline="javascript">
+  $(function () {
+
+    // 현재 페이지의 URL을 가져옵니다.
+    const currentUrl = window.location.href;
+    let currentPath = currentUrl.replace(/^https?:\/\/[^/]+/, '');
+    const pathIndex = currentPath.indexOf("?");
+    if (pathIndex != -1) {
+      currentPath = currentPath.substring(0, pathIndex);
+    }
+    // 현재 페이지의 URL과 sidebar의 URL을 비교
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    // 이메일 정보 가져오기
+    const emailDetails = $('#email-details');
+    const emailNo = emailDetails.data('email-no');
+    const emailTo = emailDetails.data('email-to');
+    const emailFrom = emailDetails.data('email-from');
+
+    // 선택된 이메일 배열
+    let selectedEmails = [{
+        emailNo: emailNo,
+        emailFrom: emailFrom,
+        emailTo: emailTo
+    }];
+
+    // AJAX 요청 처리 함수
+    function handleEmailAction(actionUrl, data, successMessage, errorMessage) {
+          $.ajax({
+          url: actionUrl,
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+                emailNo: emailNo, // emailNo를 추가
+                mails: selectedEmails
+          }),
+          success: function(response) {
+              if (response.newEmailNo) {
+                  const newEmailNo = response.newEmailNo;
+                  const emailFrom = response.emailFrom;
+                  const emailTo = response.emailTo;
+                  // newEmailNo가 emailNo와 같은지 확인
+                  if (newEmailNo === emailNo) {
+                      alert("마지막 페이지입니다."); // 동일할 경우 alert
+                  } else {
+                      // 다음 메일 번호로 리다이렉트
+                      location.href = `/mailbox/detail?emailNo=${newEmailNo}&emailFrom=${emailFrom}&emailTo=${emailTo}`;
+                  }
+              } else {
+                  alert(successMessage);
+                  location.reload(); // 페이지 새로 고침
+              }
+          },
+          error: function(xhr, status, error) {
+              alert(errorMessage);
+          }
+      });
+    }
+
+    // 삭제 버튼 클릭 이벤트
+    $('.btn-delete').on('click', function() {
+      handleEmailAction('/mailbox/delete-mails', { emailNo: emailNo, mails: selectedEmails }, '메일이 삭제되었습니다.', '메일 삭제 중 오류가 발생했습니다.');
+    });
+
+    // 중요메일 버튼 클릭 이벤트
+    $('.btn-mark').on('click', function() {
+      handleEmailAction('/mailbox/mark-mails', { emailNo: emailNo, mails: selectedEmails }, '메일이 중요메일로 설정되었습니다.', '중요메일 설정 중 오류가 발생했습니다.');
+    });
+
+    // 중요메일 삭제 버튼 클릭 이벤트
+    $('.btn-remove-mark').on('click', function() {
+      handleEmailAction('/mailbox/remove-mark-mails', { emailNo: emailNo, mails: selectedEmails }, '중요메일로 설정이 취소되었습니다.', '중요메일 설정 취소 중 오류가 발생했습니다.');
+    });
+
+    // 답장 버튼 클릭 이벤트
+    $('.btn-redirect').on('click', function() {
+      const emailFromArray = selectedEmails.map(email => email.emailFrom);
+      const emailFromQuery = emailFromArray.join(',');
+      location.href = '/mailbox/write?emails=' + encodeURIComponent(emailFromQuery);
+    });
+
+    // 이전 메일 버튼 클릭 이벤트
+    $('.btn-reply').on('click', function() {
+      const actionUrl = '/mailbox/previous-detail'; // 이전 메일 URL
+      handleEmailAction(actionUrl, { emailNo: emailNo, mails: selectedEmails }, '이전 메일을 불러왔습니다.', '이전 메일 불러오기 중 오류가 발생했습니다.');
+    });
+
+    // 다음 메일 버튼 클릭 이벤트
+    $('.btn-share').on('click', function() {
+      const actionUrl = '/mailbox/next-detail'; // 다음 메일 URL
+      handleEmailAction(actionUrl, { emailNo: emailNo, mails: selectedEmails }, '다음 메일을 불러왔습니다.', '다음 메일 불러오기 중 오류가 발생했습니다.');
+    });
+
+    $('.btn-print').on('click', function() {
+        // 인쇄할 영역 선택
+        var printContents = document.getElementById('printableArea').innerHTML;
+        var originalContents = document.body.innerHTML;
+        // 인쇄할 내용으로 변경
+        document.body.innerHTML = printContents;
+        // 인쇄 대화상자 열기
+        window.print();
+        // 원래 내용으로 복원
+        document.body.innerHTML = originalContents;
+        location.reload(); // 페이지를 새로 고쳐서 스크립트가 다시 로드되도록 함
+    });
+     function redirectAfterDownload(attachno) {
+        setTimeout(() => {
+            window.location.href = '/mailbox/detail?attachno=' + attachno;
+        }, 1000);
+    }
+
+     // 사이드바 버튼 클릭 이벤트
+    $('.nav-link').on('click', function(e) {
+      e.preventDefault(); // 기본 링크 동작 방지
+      const listType = $(this).data('list'); // 전역 변수에 리스트 타입 저장
+      const targetUrl = `all?listType=${listType}`; // URL에 리스트 타입 추가
+      window.location.href = targetUrl; // all로 리다이렉션
+    });
+
+    empId = /*[[${session.loginUser.empId}]]*/ 0;
+    initializeWebSocket(empId);
+
+  });
+</script>
+
+
+</body>
+</html>

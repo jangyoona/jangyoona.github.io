@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.MailMapper">
+    <!-- insert start -->
+    <insert id="insertMail" parameterType="MailDto" useGeneratedKeys="true" keyProperty="emailNo">
+        INSERT INTO groupware_team2.email
+        (email_from, email_to, email_title, email_content, emp_id)
+        VALUES (#{emailFrom}, #{emailTo}, #{emailTitle}, #{emailContent}, #{empId});
+    </insert>
+    <insert id="insertMailAttach" parameterType="MailAttachDto" useGeneratedKeys="true" keyProperty="emailAttachNo">
+        INSERT INTO groupware_team2.email_attach (email_userfilename, email_savedfilename, email_no)
+        VALUES (#{ emailUserFileName },  #{ emailSavedFileName }, #{ emailNo });
+    </insert>
+    <!-- insert start -->
+    <!-- select start -->
+
+    <resultMap id="MailResultMap" type="MailDto">
+        <id property="emailNo" column="emailNo"/>
+            <result property="emailFrom" column="emailFrom"/>
+            <result property="emailTo" column="emailTo"/>
+            <result property="emailTitle" column="emailTitle"/>
+            <result property="emailContent" column="emailContent"/>
+            <result property="emailWriteDate" column="emailWriteDate"/>
+            <result property="emailToRead" column="emailToRead"/>
+            <result property="emailFromRead" column="emailFromRead"/>
+            <result property="emailFromActive" column="emailFromActive"/>
+            <result property="emailToActive" column="emailToActive"/>
+            <result property="emailToLike" column="emailToLike"/>
+            <result property="emailFromLike" column="emailFromLike"/>
+            <result property="emailToDeleteDate" column="emailToDeleteDate"/>
+            <result property="emailFromDeleteDate" column="emailFromDeleteDate"/>
+            <result property="empPosition" column="empPosition"/>
+            <result property="empName" column="empName"/>
+            <result property="recipient" column="recipient"/>
+
+        <collection property="attachments" ofType="MailAttachDto">
+            <result property="emailAttachNo" column="emailAttachNo"/>
+            <result property="emailUserFileName" column="emailUserFileName"/>
+            <result property="emailSavedFileName" column="emailSavedFileName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getToDeletedEmailList" resultType="MailDto">
+        SELECT
+            e.email_no AS emailNo,
+            e.email_to_deltedate AS emailToDeleteDate
+        FROM
+            email e
+        WHERE
+            e.email_to_active = 0
+    </select>
+    <select id="getFromDeletedEmailList" resultType="MailDto">
+        SELECT
+            e.email_no AS emailNo,
+            e.email_from_deltedate AS emailFromDeleteDate
+        FROM
+            email e
+        WHERE
+            e.email_from_active = 0
+    </select>
+
+
+
+    <select id="selectPositionNameByPositionNo" parameterType="map" resultType="PositionDto">
+        SELECT
+            position_name AS positionName,
+            position_no AS positionNo
+        FROM
+            groupware_team2.position
+        WHERE
+            position_no = #{ positionNo }
+    </select>
+
+
+
+    <select id="selectMailAttachByAttachNo" parameterType="int" resultType="MailAttachDto">
+        SELECT
+            email_attachno AS emailAttachNo,
+            email_userfilename AS emailUserFileName,
+            email_savedfilename AS emailSavedFileName,
+            email_no AS emailNo
+        FROM
+            email_attach
+        WHERE
+        email_attachno = #{ attachNo }
+    </select>
+    <select id="selecDetailMailByMailNo" parameterType="map" resultType="MailDto">
+        SELECT
+            e.email_no AS emailNo,
+            e.email_from AS emailFrom,
+            e.email_to AS emailTo
+        FROM
+            email e
+        WHERE
+        <choose>
+            <when test="type == 'next'.toString()">
+                <![CDATA[ e.email_no > #{emailNo} ]]>
+                AND (
+                    (e.email_to_active = 1 AND e.email_to = #{empEmail}) OR
+                    (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                    )
+            </when>
+            <when test="type == 'previous'.toString()">
+                <![CDATA[ e.email_no < #{emailNo} ]]>
+                AND (
+                    (e.email_to_active = 1 AND e.email_to = #{empEmail}) OR
+                    (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                    )
+            </when>
+        </choose>
+        <choose>
+            <when test="type == 'next'.toString()">
+                ORDER BY e.email_no ASC
+            </when>
+            <when test="type == 'previous'.toString()">
+                ORDER BY e.email_no DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+    <select id="selecDetailMailBySameMailNo" parameterType="map" resultType="MailDto">
+        SELECT
+            e.email_no AS emailNo,
+            e.email_from AS emailFrom,
+            e.email_to AS emailTo
+        FROM
+            email e
+        WHERE
+            e.email_no = #{emailNo}
+        LIMIT 1
+    </select>
+
+    <select id="selectMailByMailNo" parameterType="map" resultMap="MailResultMap">
+        SELECT
+            e.email_no AS emailNo,
+            e.email_from AS emailFrom,
+            e.email_to AS emailTo,
+            e.email_title AS emailTitle,
+            e.email_content AS emailContent,
+            e.email_writedate AS emailWritedate,
+            e.email_to_read AS emailToRead,
+            e.email_from_read AS emailFromRead,
+            e.email_to_active AS emailToActive,
+            e.email_from_active AS emailFromActive,
+            e.emp_id AS empId,
+            e.email_from_like AS emailFromLike,
+            e.email_to_like AS emailToLike,
+            e.email_to_deltedate AS emailToDeleteDate,
+            e.email_from_deltedate AS emailFromDeleteDate,
+            ea.email_attachno AS emailAttachNo,
+            ea.email_userfilename AS emailUserFileName,
+            ea.email_savedfilename AS emailSavedFileName,
+            p.position_name AS empPosition,
+            ep.emp_name AS empName
+        FROM
+            email e
+        LEFT OUTER JOIN
+            email_attach ea
+        ON
+            e.email_no = ea.email_no
+        LEFT JOIN
+            employee ep
+        ON
+            e.email_from = ep.emp_email
+        LEFT JOIN
+            position p
+        ON
+            ep.position_no = p.position_no
+        WHERE
+            e.email_no = #{emailNo}
+            AND(
+                (e.email_to_active = 1 AND e.email_to = #{empEmail})
+            OR
+                (e.email_from_active = 1 AND e.email_from = #{empEmail})
+            )
+    </select>
+
+    <select id="countMailsByStatus" resultType="map">
+        SELECT
+        COALESCE(SUM(CASE WHEN (e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail}) THEN 1 ELSE 0 END), 0) AS all_count,
+        COALESCE(SUM(CASE WHEN (e.email_to_active = 0 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 0 AND e.email_from =#{empEmail}) THEN 1 ELSE 0 END), 0) AS deleted_count,
+        COALESCE(SUM(CASE WHEN ((e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail}))
+                            AND (e.email_to_like = 0 AND e.email_to =#{empEmail})
+                            OR (e.email_from_like = 0 AND e.email_from =#{empEmail}) THEN 1 ELSE 0 END), 0) AS important_count,
+        COALESCE(SUM(CASE WHEN ((e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail}))
+                            AND (e.email_to_read = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_read = 1 AND e.email_from =#{empEmail}) THEN 1 ELSE 0 END), 0) AS read_count,
+        COALESCE(SUM(CASE WHEN (e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail})
+                            AND (e.email_from =#{empEmail} AND e.email_to =#{empEmail}) THEN 1 ELSE 0 END), 0) AS to_me_count,
+        COALESCE(SUM(CASE WHEN (e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail})
+                            AND e.email_to =#{empEmail} THEN 1 ELSE 0 END), 0) AS received_count,
+        COALESCE(SUM(CASE WHEN (e.email_to_active = 1 AND e.email_to =#{empEmail})
+                            OR (e.email_from_active = 1 AND e.email_from =#{empEmail})
+                            AND e.email_from =#{empEmail} THEN 1 ELSE 0 END), 0) AS sent_count
+        FROM email e;
+    </select>
+
+    <select id="countMails" resultType="int">
+        SELECT COUNT(*)
+        FROM email e
+        WHERE
+        <if test="searchText != null and type == 'search'.toString()">
+                (
+                e.email_title LIKE CONCAT('%', #{searchText}, '%')
+                OR  e.email_from LIKE CONCAT('%', #{searchText}, '%')
+                OR  e.email_to LIKE CONCAT('%', #{searchText}, '%')
+                )
+                AND (
+                (e.email_to_active = 1 AND e.email_to = #{empEmail})
+                OR  (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                )
+            </if>
+            <if test="searchText == null">
+                <choose>
+                    <when test="type == 'all'.toString()">
+                        (e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                    </when>
+                    <when test="type == 'deleted'.toString()">
+                        (e.email_to_active = 0 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 0 AND e.email_from = #{empEmail})
+                    </when>
+                    <when test="type == 'important'.toString()">
+                        ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                        AND (e.email_to_like = 0 AND e.email_to = #{empEmail})
+                        OR (e.email_from_like = 0 AND e.email_from = #{empEmail})
+                    </when>
+                    <when test="type == 'read'.toString()">
+                        ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                        AND (e.email_to_read = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_read = 1 AND e.email_from = #{empEmail})
+                    </when>
+                    <when test="type == 'sent'.toString()">
+                        (e.email_from = #{empEmail})
+                        AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                    </when>
+                    <when test="type == 'received'.toString()">
+                        (e.email_to = #{empEmail})
+                        AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                    </when>
+                    <when test="type == 'tome'.toString()">
+                        (e.email_to = #{empEmail} OR e.email_from = #{empEmail})
+                        AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                        OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                    </when>
+                </choose>
+            </if>
+    </select>
+
+    <select id="selectMailByRange" parameterType="map" resultMap="MailResultMap">
+    SELECT
+        e.email_no AS emailNo,
+        e.email_from AS emailFrom,
+        e.email_to AS emailTo,
+        e.email_title AS emailTitle,
+        e.email_content AS emailContent,
+        e.email_writedate AS emailWritedate,
+        e.email_to_read AS emailToRead,
+        e.email_from_read AS emailFromRead,
+        e.email_to_active AS emailToActive,
+        e.email_from_active AS emailFromActive,
+        e.email_to_deltedate AS emailToDeleteDate,
+        e.email_From_deltedate AS emailFromDeleteDate,
+        e.emp_id AS empId,
+        e.email_from_like AS emailFromLike,
+        e.email_to_like AS emailToLike,
+        ea.email_attachno AS emailAttachNo,
+        p.position_name AS empPosition,
+        ep.emp_name AS empName
+    FROM email e
+    LEFT JOIN
+        email_attach ea
+    ON
+        e.email_no = ea.email_no
+    LEFT JOIN
+        employee ep
+    ON
+        e.email_from = ep.emp_email
+    LEFT JOIN
+        position p
+    ON
+        ep.position_no = p.position_no
+    WHERE
+        <if test="searchText != null and type == 'search'.toString()">
+                (
+                    e.email_title LIKE CONCAT('%', #{searchText}, '%')
+                OR  e.email_from LIKE CONCAT('%', #{searchText}, '%')
+                OR  e.email_to LIKE CONCAT('%', #{searchText}, '%')
+                )
+                AND (
+                        (e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR  (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                )
+        </if>
+        <if test="searchText == null">
+            <choose>
+                <when test="type == 'all'.toString()">
+                    (e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail})
+                </when>
+                <when test="type == 'deleted'.toString()">
+                    (e.email_to_active = 0 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 0 AND e.email_from = #{empEmail})
+                </when>
+                <when test="type == 'important'.toString()">
+                    ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                    AND (e.email_to_like = 0 AND e.email_to = #{empEmail})
+                    OR (e.email_from_like = 0 AND e.email_from = #{empEmail})
+                </when>
+                <when test="type == 'read'.toString()">
+                    ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                    AND (e.email_to_read = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_read = 1 AND e.email_from = #{empEmail})
+                </when>
+                <when test="type == 'sent'.toString()">
+                    (e.email_from = #{empEmail})
+                    AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                </when>
+                <when test="type == 'received'.toString()">
+                    (e.email_to = #{empEmail})
+                    AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                </when>
+                <when test="type == 'tome'.toString()">
+                    (e.email_to = #{empEmail} OR e.email_from = #{empEmail})
+                    AND ((e.email_to_active = 1 AND e.email_to = #{empEmail})
+                    OR (e.email_from_active = 1 AND e.email_from = #{empEmail}))
+                </when>
+            </choose>
+        </if>
+    ORDER BY e.email_no DESC
+    LIMIT #{from}, #{count}
+    </select>
+    <!-- select end -->
+    <!-- update start -->
+    <update id="updateToEmails" parameterType="map">
+        UPDATE groupware_team2.email
+        SET
+        <choose>
+            <when test="type == 'delete'.toString()">
+                email_to_active = 0,
+                email_to_deltedate = now()
+            </when>
+            <when test="type == 'mark'.toString()">
+                email_to_like = 0
+            </when>
+            <when test="type == 'remove-mark'.toString()">
+                email_to_like = 1
+            </when>
+            <when test="type == 'delete-cancel'.toString()">
+                email_to_active = 1
+            </when>
+            <when test="type == 'real-delete'.toString()">
+                email_to_active = 3
+            </when>
+            <when test="type == 'read'.toString()">
+                email_to_read = 0
+            </when>
+        </choose>
+        WHERE email_no IN
+        <foreach item="emailNo" collection="toEmailNos" open="(" separator="," close=")">
+            #{emailNo}
+        </foreach>
+    </update>
+    <update id="updateFromEmails" parameterType="map">
+        UPDATE groupware_team2.email
+        SET
+        <choose>
+            <when test="type == 'delete'.toString()">
+                email_from_active = 0,
+                email_from_deltedate = now()
+            </when>
+            <when test="type == 'mark'.toString()">
+                email_from_like = 0
+            </when>
+            <when test="type == 'remove-mark'.toString()">
+                email_from_like = 1
+            </when>
+            <when test="type == 'delete-cancel'.toString()">
+                email_from_active = 1
+            </when>
+            <when test="type == 'real-delete'.toString()">
+                email_from_active = 3
+            </when>
+            <when test="type == 'read'.toString()">
+                email_from_read = 0
+            </when>
+        </choose>
+        WHERE email_no IN
+        <foreach item="emailNo" collection="fromEmailNos" open="(" separator="," close=")">
+            #{emailNo}
+        </foreach>
+    </update>
+
+
+    <!-- update end -->
+
+
+
+</mapper>

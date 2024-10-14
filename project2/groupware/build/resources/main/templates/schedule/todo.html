@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>개인 일정 관리</title>
+
+  <!-- jQuery -->
+  <script src="/plugins/jquery/jquery.min.js"></script>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Bootstrap Datepicker -->
+<!--  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">-->
+  <link rel="stylesheet" type="text/css" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/dist/project-list/todo.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+  <div th:replace="~{/modules/main-header-navbar}"></div>
+  <div th:replace="~{/modules/main-sidebar}"></div>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <div class="main-container">
+      <button type="button" th:text="${project.scheduleTitle}"
+              class="btn btn-info" id="project-no"
+              th:data-projectno="${project.scheduleNo}"></button>
+      <h3 th:text="|${employee.empName} 님의 Todo List|" id="emp-id" th:data-empid="${employee.empId}"></h3>
+      <div class="card" id="card">
+        <!-- /.card-header -->
+
+        <!-- /.card-body -->
+      </div>
+      <form id="writeTodoForm" method="POST" action="write-todo">
+        <input type="hidden"  name="scheduleNo" th:value="${#ctx.param.projectNo}">
+        <input type="hidden" name="empId" th:value="${#ctx.param.empId}">
+        <div th:if="${#ctx.session.loginUser.empId == employee.empId}" class="input-container">
+          <h4>일정 추가</h4>
+          <div class="form-group">
+            <label for="scheduleBoardContent">일정 내용</label>
+            <input id="scheduleBoardContent" class="form-control todo-content" name="userScheduleContent">
+          </div>
+          <div class="form-group">
+            <label for="userScheduleStartDate">시작 날짜</label>
+            <input type="text" id="userScheduleStartDate" name="userScheduleStartDate" class="form-control datepicker todo-content" placeholder="시작 날짜">
+          </div>
+          <div class="form-group">
+            <label for="userScheduleEndDate">종료 날짜</label>
+            <input type="text" id="userScheduleEndDate" name="userScheduleEndDate" class="form-control datepicker todo-content" placeholder="종료 날짜">
+          </div>
+          <button type="button" class="btn btn-primary" id="todo-write-btn">추가하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- /.content-wrapper -->
+  <div th:replace="~{/modules/main-footer}"></div>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- Bootstrap Datepicker -->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+<script type="text/javascript" th:inline="javascript">
+  $(window).on('load', function() {
+    const currentPath = '/schedule/list'
+    $(".sidebar .nav-item a[href='" + currentPath + "']").addClass('active');
+
+    // project로 가기 버튼 기능
+    $('#project-no').on('click', function(e) {
+      location.href= 'project-detail?projectNo=' + $(this).data('projectno');
+    });
+
+    // todo-list 항목 조회
+    const projectNo = $('#project-no').data('projectno');
+    const empId = $('#emp-id').data('empid');
+    $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId);
+
+<!--    $(".datepicker").datepicker({-->
+<!--        format: "yyyy-mm-dd h:m:s",-->
+<!--        autoclose: true,-->
+<!--        todayHighlight: true-->
+<!--    });-->
+
+    $(".datepicker").datetimepicker({
+        format: "y-M-d H:i",
+        autoclose: true,
+        todayHighlight: true,
+        onChangeDateTime: function(currentDateTime, $input) {
+            if (currentDateTime) {
+                const year = currentDateTime.getFullYear().toString().substr(2);
+                const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                const day = ('0' + currentDateTime.getDate()).slice(-2);
+                const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                $input.val(formattedDate);
+            }
+        }
+    });
+
+    $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId, function() {
+      $(".datepicker").datetimepicker({
+        format: "y-M-d H:i",
+        autoclose: true,
+        todayHighlight: true,
+        onChangeDateTime: function(currentDateTime, $input) {
+            if (currentDateTime) {
+                const year = currentDateTime.getFullYear().toString().substr(2);
+                const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                const day = ('0' + currentDateTime.getDate()).slice(-2);
+                const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                $input.val(formattedDate);
+            }
+        }
+      });
+    });
+
+    // todo 버튼 기능
+    let index = 0;
+    $('#card').on('click', '.edit-button', function(e) {
+      index = $(this).parent().data('idx');
+
+      $(this).parent().find('.success-button').css('display', 'none');  // success-button
+      $(this).parent().find('.edit-button').css('display', 'none');  // edit-button
+      $(this).parent().find('.delete-button').css('display', 'none');  // delete-button
+
+      $('.submit-button').eq(index).css('display', 'inline');
+      $('.cancel-button').eq(index).css('display', 'inline');
+
+      $('.content-div').eq(index).css('display', 'none');
+      $('.content-input').eq(index).css('display', 'block');
+
+      $('.start-date').eq(index).css('display', 'none');
+      $('.end-date').eq(index).css('display', 'none');
+
+      $('.start-input').eq(index).css('display', 'block');
+      $('.end-input').eq(index).css('display', 'block');
+
+    });
+
+    // 투두 내용 변경 버튼 function
+    function modifyTodo(index) {
+      const modifyTodoForm = $(`.modifyTodoForm${index}`);
+      const data = modifyTodoForm.serializeArray();
+      const formData = {};
+
+      data.forEach(item => {
+          formData[item.name] = item.value;
+      });
+
+      $.ajax({
+        "url": modifyTodoForm.attr('action'),
+        "method" : modifyTodoForm.attr('method'),
+        "contentType" : 'application/json; charset-utf-8',
+        "data" : JSON.stringify(formData),
+        "dataType" : "text",
+        "success" : (response, status, xhr) => {
+            if (response == "success") {
+                $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId, function() {
+                                                  $(".datepicker").datetimepicker({
+                                                    format: "y-M-d H:i",
+                                                    autoclose: true,
+                                                    todayHighlight: true,
+                                                    onChangeDateTime: function(currentDateTime, $input) {
+                                                        if (currentDateTime) {
+                                                            const year = currentDateTime.getFullYear().toString().substr(2);
+                                                            const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                                                            const day = ('0' + currentDateTime.getDate()).slice(-2);
+                                                            const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                                                            const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                                                            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                                                            $input.val(formattedDate);
+                                                        }
+                                                    }
+                                                  });
+                                                });
+            }
+        },
+        "error" : (xhr, status, err) => {
+            alert("전송 실패");
+        }
+      });
+    }
+
+    // 완료, 수정 상태 변경 버튼 function
+    function modifyStatus(index) {
+      const modifyStatusForm = $(`.modifyStatusForm`).eq(index);
+      const data = modifyStatusForm.serializeArray();
+
+      $.ajax({
+        "url": modifyStatusForm.attr('action'),
+        "method" : modifyStatusForm.attr('method'),
+        "data" : data,
+        "dataType" : "text",
+        "success" : (response, status, xhr) => {
+            if (response == "success") {
+                $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId, function() {
+                                                  $(".datepicker").datetimepicker({
+                                                    format: "y-M-d H:i",
+                                                    autoclose: true,
+                                                    todayHighlight: true,
+                                                    onChangeDateTime: function(currentDateTime, $input) {
+                                                        if (currentDateTime) {
+                                                            const year = currentDateTime.getFullYear().toString().substr(2);
+                                                            const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                                                            const day = ('0' + currentDateTime.getDate()).slice(-2);
+                                                            const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                                                            const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                                                            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                                                            $input.val(formattedDate);
+                                                        }
+                                                    }
+                                                  });
+                                                });
+            }
+        },
+        "error" : (xhr, status, err) => {
+            alert("전송 실패");
+        }
+      });
+    }
+
+    $('#card').on('click', '.success-button', function(e) {
+        index = $(this).parent().data('idx');
+        modifyStatus(index);
+    });
+
+    $('#card').on('click', '.progress-button', function(e){
+        index = $(this).parent().data('idx');
+        modifyStatus(index);
+    });
+
+    $('#card').on('click', '.cancel-button', function(e) {
+        index = $(this).parent().data('idx');
+
+        $(this).parent().find('.success-button').css('display', 'inline');  // success-button
+        $(this).parent().find('.edit-button').css('display', 'inline');  // edit-button
+        $(this).parent().find('.delete-button').css('display', 'inline');  // delete-button
+
+        $('.submit-button').eq(index).css('display', 'none');
+        $('.cancel-button').eq(index).css('display', 'none');
+
+        $('.content-div').eq(index).css('display', 'block');
+        $('.content-input').eq(index).css('display', 'none');
+
+        $('.start-date').eq(index).css('display', 'inline');
+        $('.end-date').eq(index).css('display', 'inline');
+
+        $('.start-input').eq(index).css('display', 'none');
+        $('.end-input').eq(index).css('display', 'none');
+    });
+
+    // 수정하기 기능
+    $('#card').on('click', '.submit-button', function(e) {
+      index = $(this).parent().data('idx');
+      modifyTodo(index);
+    });
+
+    // 삭제하기 기능
+    $('#card').on('click', '.delete-button', function(e) {
+      const userScheduleNo = $(this).data('userscheduleno');
+
+      $.ajax({
+        "url": "delete-todo",
+        "method" : "POST",
+        "data" : "userScheduleNo=" + userScheduleNo,
+        "success" : (response, status, xhr) => {
+            if (response == "success") {
+                $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId, function() {
+                                                  $(".datepicker").datetimepicker({
+                                                    format: "y-M-d H:i",
+                                                    autoclose: true,
+                                                    todayHighlight: true,
+                                                    onChangeDateTime: function(currentDateTime, $input) {
+                                                        if (currentDateTime) {
+                                                            const year = currentDateTime.getFullYear().toString().substr(2);
+                                                            const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                                                            const day = ('0' + currentDateTime.getDate()).slice(-2);
+                                                            const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                                                            const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                                                            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                                                            $input.val(formattedDate);
+                                                        }
+                                                    }
+                                                  });
+                                                });
+            }
+        },
+        "error" : (xhr, status, err) => {
+            alert("전송 실패");
+        }
+      });
+    });
+
+    // 페이징 버튼 Ajax
+    $('#card').on('click', '.page-item', function(e) {
+        let pageNo = $('.paging').data('pageno');
+        const lastPageNo = Math.floor(($('.paging').data('datacount') / 5) + (($('.paging').data('datacount') % 5) > 0 ? 1 : 0));
+        if (/«/.test($(this).text())) pageNo = 1;
+        if ($(this).text() == 'Previous') pageNo = pageNo - 1 < 1 ? 1 : pageNo - 1;
+        if ($(this).text() == 'Next') pageNo = pageNo + 1 > lastPageNo ? lastPageNo : pageNo + 1;
+        if (/»/.test($(this).text())) pageNo = lastPageNo;
+        if (!isNaN($(this).text())) pageNo = $(this).text();
+
+        $.ajax({
+            "url" : "update-list",
+            "method" : "GET",
+            "success": function(result, status, xhr) {
+                if (result === "success") {
+                    $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId +
+                                              '&pageNo=' + pageNo, function() {
+                                                $(".datepicker").datetimepicker({
+                                                  format: "y-M-d H:i",
+                                                  autoclose: true,
+                                                  todayHighlight: true,
+                                                  onChangeDateTime: function(currentDateTime, $input) {
+                                                      if (currentDateTime) {
+                                                          const year = currentDateTime.getFullYear().toString().substr(2);
+                                                          const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                                                          const day = ('0' + currentDateTime.getDate()).slice(-2);
+                                                          const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                                                          const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                                                          const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                                                          $input.val(formattedDate);
+                                                      }
+                                                  }
+                                                });
+                                              });
+                } else {
+                    alert('실패 1');
+                }
+            },
+            "error": function(xhr, status, err) {
+                alert("실패 2");
+            }
+        });
+
+    });
+
+    $('#todo-write-btn').on('click', (e) => {
+      for (let i = 0; i < $('.todo-content').length; i++) {
+        if ($('.todo-content').eq(i).val().length == 0 && i == 0) {
+          alert('내용을 입력해주세요');
+          e.preventDefault();
+          e.stopPropagation();
+          $('.todo-content').eq(i).focus();
+        } else if ($('.todo-content').eq(i).val().length == 0 && i == 1) {
+          alert('시작 날짜를 입력해주세요');
+          e.preventDefault();
+          e.stopPropagation();
+          $('.todo-content').eq(i).focus();
+        } else if ($('.todo-content').eq(i).val().length == 0 && i == 2) {
+          alert('종료 날짜를 입력해주세요');
+          e.preventDefault();
+          e.stopPropagation();
+          $('.todo-content').eq(i).focus();
+        }
+      }
+
+      const writeTodoForm = $('#writeTodoForm');
+      const data = writeTodoForm.serializeArray();
+      const formData = {};
+
+      data.forEach(item => {
+          formData[item.name] = item.value;
+      });
+
+      $.ajax({
+          url: writeTodoForm.attr('action'),
+          method: writeTodoForm.attr('method'),
+          contentType : 'application/json; charset-utf-8',
+          data: JSON.stringify(formData),
+          dataType: 'text',
+          success: (response, status, xhr) => {
+              if (response == "success") {
+                alert('추가되었습니다.');
+                $('#card').load('todo-list?projectNo=' + projectNo + '&empId=' + empId, function() {
+                                                  $(".datepicker").datetimepicker({
+                                                    format: "y-M-d H:i",
+                                                    autoclose: true,
+                                                    todayHighlight: true,
+                                                    onChangeDateTime: function(currentDateTime, $input) {
+                                                        if (currentDateTime) {
+                                                            const year = currentDateTime.getFullYear().toString().substr(2);
+                                                            const month = ('0' + (currentDateTime.getMonth() + 1)).slice(-2);
+                                                            const day = ('0' + currentDateTime.getDate()).slice(-2);
+                                                            const hours = ('0' + currentDateTime.getHours()).slice(-2);
+                                                            const minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+                                                            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+                                                            $input.val(formattedDate);
+                                                        }
+                                                    }
+                                                  });
+                                                });
+              }
+          },
+          error: (xhr, status, err) => {
+              alert("전송 실패");
+          }
+      });
+
+    });
+
+    empId = /*[[${session.loginUser.empId}]]*/ 0;initializeWebSocket(empId);
+
+  });
+</script>
+
+</body>
+</html>

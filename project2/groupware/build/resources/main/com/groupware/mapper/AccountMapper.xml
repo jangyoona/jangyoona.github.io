@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.groupware.mapper.AccountMapper">
+
+    <select id="findByEmpIdAndEmpPasswd" parameterType="hashmap" resultType="EmployeeDto">
+<!--        SELECT emp_id empId, emp_active empActive, emp_regidate empRegiDate, emp_name empName, emp_email empEmail, dept_no deptNo, emp_position empPosition-->
+<!--        FROM employee-->
+<!--        WHERE emp_id = #{ empId } AND emp_passwd = #{ empPasswd } AND emp_active = true-->
+
+        SELECT
+            e.emp_id empId,
+            e.emp_passwd empPasswd,
+            e.emp_active empActive,
+            e.emp_regidate empRegiDate,
+            e.emp_name empName,
+            e.emp_email empEmail,
+            e.dept_no deptNo,
+            d.dept_name deptName,
+            e.position_no positionNo,
+            p.position_name positionName
+        FROM
+            employee e
+        INNER JOIN
+            department d ON e.dept_no = d.dept_no
+        INNER JOIN
+            position p ON p.position_no = e.position_no
+        WHERE
+            emp_id = #{ empId } AND
+            emp_passwd = #{ empPasswd } AND
+            emp_active = true
+    </select>
+
+    <select id="findEmployeeDetailByIdAndEmpPasswd" parameterType="int" resultType="EmployeeDetailDto">
+        SELECT emp_id empId, emp_birthdate empBirthDate, emp_phone empPhone, emp_indate empInDate, emp_outdate empOutDate, emp_address empAddress, emp_address_detail empAddressDetail
+        FROM employee_detail
+        WHERE emp_id = #{ empId }
+    </select>
+
+    <select id="findByEmpId" parameterType="int" resultType="int">
+        SELECT COUNT(emp_id) from employee WHERE emp_id = #{ empId }
+    </select>
+
+    <select id="findByEmpEmail" parameterType="int" resultType="string">
+        SELECT emp_email empEmail FROM employee WHERE emp_id = #{ empId }
+    </select>
+    
+    <insert id="insertEmailKey" parameterType="hashmap">
+        INSERT INTO temp( temp_key, temp_value )
+        VALUES ( #{ key }, #{ code } )
+    </insert>
+
+    <select id="findByTempValue" parameterType="int">
+        SELECT temp_value FROM temp WHERE temp_key = #{ empId }
+    </select>
+
+    <delete id="deleteTempColumnByEmpId" parameterType="int">
+        DELETE FROM temp WHERE temp_key = #{ key }
+    </delete>
+
+    <update id="updateEmpPasswd" parameterType="string">
+        UPDATE employee SET emp_passwd = #{ empPasswd } WHERE emp_id = #{ empId }
+    </update>
+
+
+    <!--사원 기본 정보 입력-->
+    <insert id="insertEmp" parameterType="EmployeeDto">
+
+        INSERT INTO employee (emp_id, emp_passwd, emp_name, emp_email, dept_no, position_no)
+        VALUES (#{ empId }, #{ empPasswd }, #{ empName }, #{ empEmail }, #{ deptNo }, #{ positionNo })
+
+    </insert>
+
+    <!--사원 상제 정보 입력-->
+    <insert id="insertEmpDetail" parameterType="EmployeeDetailDto">
+
+        INSERT INTO employee_detail (emp_id, emp_birthdate, emp_phone, emp_indate, emp_address, emp_address_detail)
+        VALUES ( #{ empId }, #{ empBirthDate }, #{ empPhone }, #{ empInDate }, #{ empAddress }, #{ empAddressDetail } )
+
+    </insert>
+    <!--사원 등록 시 연차정보 입력-->
+    <insert id="insertAnnual" parameterType="AnnualDto">
+
+        INSERT INTO annual (emp_id)
+        VALUES(#{empId})
+
+    </insert>
+
+    <select id="getLatestEmpId" resultType="String">
+
+        SELECT emp_id
+        FROM employee
+        ORDER BY emp_id DESC
+        LIMIT 1
+
+    </select>
+
+    <select id="findEmployeeByEmpId" resultType="EmployeeDto">
+
+        SELECT
+        e.emp_id empId,
+        e.emp_name empName,
+        ed.emp_birthdate empBirthDate,
+        ed.emp_phone empPhone,
+        e.emp_email empEmail,
+        ed.emp_address empAddress,
+        ed.emp_address_detail empAddressDetail,
+        ed.emp_indate empInDate,
+        e.position_no positionNo,
+        e.dept_no deptNo
+
+        FROM employee e
+
+        INNER JOIN employee_detail ed ON e.emp_id = ed.emp_id
+
+        WHERE e.emp_id = #{ empId }
+
+
+    </select>
+
+    <update id="updateEmployeeByEmpId" parameterType="EmployeeDto">
+
+        UPDATE employee
+
+        SET
+        emp_id = #{ empId },
+        emp_name = #{ empName },
+        emp_email = #{ empEmail },
+        dept_no = #{ deptNo },
+        position_no = #{ positionNo }
+
+        WHERE
+        emp_id = #{ empId }
+
+    </update>
+
+    <update id="updateEmployeeDetailByEmpId" parameterType="EmployeeDetailDto">
+
+        UPDATE employee_detail
+
+        SET
+        emp_birthdate = #{ empBirthDate },
+        emp_phone = #{ empPhone },
+        emp_address = #{ empAddress },
+        emp_address_detail = #{ empAddressDetail },
+        emp_indate = #{ empInDate },
+        modify_active = 0,
+        modify_detail = '수정 완료'
+
+        WHERE
+        emp_id = #{ empId }
+
+    </update>
+
+    <update id="updateEmployeeInfoToRequestModify" parameterType="hashmap">
+
+        UPDATE employee_detail
+
+        SET
+        modify_active = 1,
+        modify_detail = #{ modifyDetail }
+
+        WHERE
+        emp_id = #{ empId }
+
+    </update>
+
+    <select id="findEmployeeRequestModify" resultType="EmployeeDetailDto">
+
+        SELECT
+        emp_id empId,
+        modify_detail modifyDetail
+
+        FROM employee_detail
+
+        WHERE
+        modify_active = 1
+
+    </select>
+
+    <select id="insertEmployeeAttach" parameterType="EmployeeAttachDto">
+
+        INSERT INTO employee_attach (userfilename, savedfilename, emp_id)
+        VALUES (#{ userFilename }, #{ savedFilename }, #{ empId })
+
+    </select>
+
+</mapper>

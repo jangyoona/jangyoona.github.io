@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>사원 등록</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <!-- Custom CSS for layout -->
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            width: 48%;
+            box-sizing: border-box;
+            margin: 10px;
+        }
+        .table td {
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="register-logo">
+        <b>사원 등록</b>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">근태 수정 요청 관리</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0" style="height: 300px;">
+                <table class="table table-head-fixed text-nowrap">
+                    <colgroup>
+                        <col style="width: 33%">
+                        <col style="width: 33%;">
+                        <col style="width: 34%;">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>사번</th>
+                        <th>수정요청 사유</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="EmployeeRequestModify : ${EmployeeRequestModify}" style="height:30px">
+                        <td th:text="${EmployeeRequestModify.empId}"></td>
+                        <td th:text="${EmployeeRequestModify.modifyDetail}"></td>
+                        <td>
+                            <a th:href="'/account/modify?empId=' + ${EmployeeRequestModify.empId}">
+                                수정하기
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body register-card-body">
+                <p class="login-box-msg">사원 정보를 수정합니다</p>
+                <form id="modifyForm" action="/account/modify" method="post" onsubmit="return checkEmpId()">
+                    <div th:if="${employee.empId != null}">
+                        <label>사번</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name="empId" id="empId" required="" readonly th:value="${employee.empId}">
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <span class="fas fa-user"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <label>사원 이름</label>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="empName" id="empName" required="" th:value="${employee.empName}">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" class="form-control" name="empPosition" id="empPosition" value="더미데이터">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>직급</label>
+                                <select class="form-control select2" name="positionNo" id="positionNo" style="width: 100%;">
+                                    <option th:each="position : ${position}"
+                                            th:value="${position.positionNo}"
+                                            th:text="${position.positionName}"
+                                            th:selected="${position.positionNo == employee.positionNo}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>부서</label>
+                                <select class="form-control select2" name="deptNo" id="deptNo" style="width: 100%;">
+                                    <option th:each="department : ${department}"
+                                            th:value="${department.deptNo}"
+                                            th:text="${department.deptName}"
+                                            th:selected="${department.deptNo == employee.deptNo}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <label>생년월일</label>
+                    <div class="input-group mb-3">
+                        <input type="date" class="form-control" name="empBirthDate" required="" th:value="${#dates.format(employee.empBirthDate, 'yyyy-MM-dd')}">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                            </div>
+                        </div>
+                    </div>
+                    <label>연락처</label>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="empPhone" id="empPhone" required="" th:value="${employee.empPhone}" minlength="9" maxlength="11">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                            </div>
+                        </div>
+                    </div>
+                    <label>이메일</label>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" id="empEmail" name="empEmail" required="" th:value="${employee.empEmail}">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="button" class="btn btn-block btn-default" onclick="sample4_execDaumPostcode()" value="우편번호 찾기"><br>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="sample4_roadAddress" required="" name="empAddress" th:value="${employee.empAddress}">
+                        <div class="input-group-text">
+                        </div>
+                    </div>
+                    <label>상세주소</label>
+                    <div class="input-group mb-3">
+                        <span id="guide" style="color:#999;display:none"></span>
+                        <input type="text" class="form-control" id="sample4_detailAddress" name="empAddressDetail" th:value="${employee.empAddressDetail}" required="">
+                        <div class="input-group-text">
+                        </div>
+                    </div>
+                    <label>입사일</label>
+                    <div class="input-group mb-3">
+                        <input type="date" class="form-control" name="empInDate" id="empInDate" required="" th:value="${#dates.format(employee.empInDate, 'yyyy-MM-dd')}">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-block">정보 수정하기</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="/home" class="text-center">홈으로 가기</a>
+                </div>
+            </div>
+            <div th:unless="${employee.empId != null}">
+                <p>사번 정보가 없습니다. 관리자에게 문의하세요.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.register-box -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+    function sample4_execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                var roadAddr = data.roadAddress;
+                var extraRoadAddr = '';
+
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraRoadAddr += data.bname;
+                }
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                if(extraRoadAddr !== ''){
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                document.getElementById('sample4_postcode').value = data.zonecode;
+                document.getElementById("sample4_roadAddress").value = roadAddr;
+                document.getElementById("sample4_jibunAddress").value = data.jibunAddress;
+
+                if(roadAddr !== ''){
+                    document.getElementById("sample4_extraAddress").value = extraRoadAddr;
+                } else {
+                    document.getElementById("sample4_extraAddress").value = '';
+                }
+
+                var guideTextBox = document.getElementById("guide");
+                if(data.autoRoadAddress) {
+                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
+                    guideTextBox.style.display = 'block';
+
+                } else if(data.autoJibunAddress) {
+                    var expJibunAddr = data.autoJibunAddress;
+                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
+                    guideTextBox.style.display = 'block';
+                } else {
+                    guideTextBox.innerHTML = '';
+                    guideTextBox.style.display = 'none';
+                }
+            }
+        }).open();
+    }
+
+    function redirectToModify(empId) {
+        window.location.href = "/account/modify?empId=" + empId;
+    }
+
+    function checkEmpId() {
+        var empId = document.getElementById("empId").value;
+        if (empId === "24071241") {
+            alert("예시 정보는 수정할 수 없습니다.");
+            return false;
+        }
+        return true;
+    }
+
+</script>
+</body>
+</html>

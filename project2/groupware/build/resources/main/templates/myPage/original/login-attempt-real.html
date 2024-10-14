@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>로그인 기록 조회</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    <style>
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- /.navbar -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="col">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1></h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item active">로그인 조회</li>
+                                <li th:if="${ #ctx.session.loginUser == null }" class="breadcrumb-item"><a th:href="@{/account/login}">로그인</a></li>
+                                <li th:unless="${ #ctx.session.loginUser == null }" class="breadcrumb-item"><a th:href="@{/account/logout}">로그아웃</a></li>
+                            </ol>
+                        </div>
+                    </div>
+                </div><!-- /.container-fluid -->
+            </section>
+
+            <!-- Main content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Responsive Hover Table</h3>
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>최근접속일자</th>
+                                    <th>구분</th>
+                                    <th>Ip</th>
+                                    <th>상태</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="attempt, start :${ loginAttempt }">
+                                    <td th:text="|${ start.count }|"></td>
+                                    <td th:text="${ #dates.format(attempt.timestamp, 'yyyy-MM-dd hh:mm:ss') }"></td>
+                                    <td th:text="${ attempt.diff == 'login' ? '로그인' : '로그아웃' }"></td>
+                                    <td th:text="${ attempt.ipAddress }"></td>
+                                    <td th:text="${ attempt.success == true ? '성공' : '실패' }"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- pager -->
+            <nav aria-label="Page navigation example" class="pager-btn" style="position: relative; left: 40%;">
+                <ul class="pagination">
+                    <!-- First Page -->
+<!--                    <li class="page-item" th:if="${pageVO.pageNum > 1}">-->
+                    <li class="page-item">
+                        <a class="page-link" th:href="@{|login-attempt?pageNum=1|}" aria-label="current">
+                            <span aria-hidden="true">&lt;&lt;</span>
+                        </a>
+                    </li>
+
+                    <!-- Previous Page -->
+<!--                    <li class="page-item" th:if="${pageVO.pageNum > 1}">-->
+                    <li class="page-item" th:if="${pageVO.pageNum >= 1}">
+                        <a class="page-link" th:href="@{|login-attempt?pageNum=${pageVO.prev == 0 ? 1 : pageVO.prev }|}" aria-label="prev">
+                            <span aria-hidden="true">&lt;</span>
+                        </a>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    <th:block th:each="num : ${#numbers.sequence(pageVO.startPage, pageVO.endPage)}">
+                        <li class="page-item" th:class="${pageVO.pageNum == num} ? 'active' : ''">
+                            <a class="page-link" th:href="@{|login-attempt?pageNum=${num}|}" th:text="${num}"></a>
+                        </li>
+                    </th:block>
+
+                    <!-- Next Page -->
+<!--                    <li class="page-item" th:if="${pageVO.pageNum < pageVO.lastPage}">-->
+<!--                        <a class="page-link" th:href="|login-attempt?pageNum=${pageVO.next}|" aria-label="next">-->
+                    <li class="page-item">
+                        <a class="page-link" th:href="@{|login-attempt?pageNum=${ pageVO.next < pageVO.lastPage ? pageVO.next : pageVO.lastPage }|}" aria-label="next">
+                            <span aria-hidden="true">&gt;</span>
+                        </a>
+                    </li>
+
+                    <!-- Last Page -->
+<!--                    <li class="page-item" th:if="${pageVO.pageNum < pageVO.lastPage}">-->
+                    <li class="page-item">
+                        <a class="page-link" th:href="@{|login-attempt?pageNum=${pageVO.lastPage}|}" aria-label="lastPage">
+                            <span aria-hidden="true">&gt;&gt;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <!-- /pager -->
+
+    </div>
+
+<div th:replace="~{/modules/main-footer}"></div>
+
+
+<!-- Control Sidebar -->
+<aside class="control-sidebar control-sidebar-dark">
+<!-- Control sidebar content goes here -->
+</aside>
+    <!-- /.control-sidebar -->
+<!-- ./wrapper -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="/dist/js/demo.js"></script>
+<script th:inline="javascript" >
+
+    $(function() {
+        $('.page-link').on('click', function() {
+<!--            $(this).css('background-color', '#f2f2f2');-->
+
+            $('.page-link').not(this).css('background-color', '');
+            $(this).css('background-color', '#f2f2f2');
+        });
+
+
+    });
+
+</script>
+</body>
+</html>

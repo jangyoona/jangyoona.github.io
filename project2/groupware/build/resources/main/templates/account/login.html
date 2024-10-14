@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>로그인</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/dist/css/adminlte.min.css">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <style>
+    .login-box {
+      position: absolute;
+      top: 40%;
+      left: 49%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-rows: 100px 1fr;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+  </style>
+</head>
+
+
+<body class="hold-transition login-page">
+<div class="login-box" style="height=50%;">
+  <div class="login-logo">
+    <p><b style="font-size:25px;">GreenWeb</b></p>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card" style="width:400px">
+    <div class="card-body login-card-body" style="width:400px">
+      <!--<p class="login-box-msg">아무거나 쓰세염</p>-->
+
+      <form action="/account/login" method="post" id="login-form">
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" name="empId" id="empId"  placeholder="아이디" minlength="8" maxlength="8"
+                 required onKeyup="this.value=this.value.replace(/[^0-9]/g,'');" th:value="${ saveId }">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-user"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" name="empPasswd" id="empPasswd" placeholder="비밀번호" required autoComplete="off">
+          <div class="input-group-append" >
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+          <div style="display:flex;">
+            <input type="checkbox" id="id-save-checkbox" name="saveId" style="margin-right:5px;" value="" th:checked="${saveId != ''}"><span>아이디 저장</span>
+          </div>
+          <hr style="border:1px solid #dedede; border-bottom-style:hidden; !important; display: block !important; width: 98% !important;"/>
+
+          <div class="col-12" style="margin-bottom:20px;">
+            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">로그인</button>
+            <button type="button" class="btn btn-light btn-block" id="passwd-reset-btn">비밀번호 재설정</button>
+          </div>
+          <!-- /.col -->
+      </form>
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/dist/js/adminlte.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+  $(function() {
+
+        // 로그인 후 뒤로가기 시 input창 비우기
+        window.addEventListener('pageshow', (event) => {
+            $('#empPasswd').val('');
+        });
+
+        if($('#empId').val().length == 8) {
+            $('#empPasswd').focus();
+        } else {
+            $('#empId').focus();
+        }
+
+        $('#passwd-reset-btn').on('click', () => {
+              location.href='user-check';
+        });
+
+        $('#submit-btn').on('click', (event) => {
+              const id = $('#empId').val();
+              const pw = $('#empPasswd').val();
+
+              event.preventDefault();
+              event.stopPropagation();
+
+              if(id.length == 0) {
+                  window.alert('아이디를 입력해 주세요');
+                  $('#empId').focus();
+              } else if(id.length < 8) {
+                window.alert('아이디는 8자리를 입력해 주세요');
+                $('#empId').focus();
+              } else if(pw.length == 0) {
+                  window.alert('비밀번호를 입력해 주세요');
+                  $('#empPw').focus();
+              } else {
+                  $('#login-form').submit();
+              }
+
+
+        });
+
+        $('#id-save-checkbox').change(function(){
+            if($('#id-save-checkbox').is(':checked')) {
+                $('#id-save-checkbox').val('true');
+            }
+        });
+
+         // 로그인 실패
+         if (/*[[${ #ctx.param.loginfail }]]*/) {
+                alert("아이디, 비밀번호를 다시 확인해주세요");
+        }
+
+  });
+
+
+</script>
+
+</body>
+</html>

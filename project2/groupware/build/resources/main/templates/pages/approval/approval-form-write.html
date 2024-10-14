@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" >
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AdminLTE 3 | Editors</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="../../plugins/summernote/summernote-bs4.min.css">
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="../../plugins/codemirror/codemirror.css">
+  <link rel="stylesheet" href="../../plugins/codemirror/theme/monokai.css">
+  <!-- SimpleMDE -->
+<!--  <link rel="stylesheet" href="../../plugins/simplemde/simplemde.min.css">-->
+
+
+  <style>
+    .button-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .button-container input {
+          margin-left: 10px;
+    }
+
+   table {
+            width: auto;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+            white-space: nowrap;
+        }
+        td {
+            width: 200px;
+        }
+
+  </style>
+</head>
+
+
+
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <dib th:replace="~{/modules/main-header-navbar}"></dib>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <dib th:replace="~{/modules/main-sidebar}"></dib>
+  <!--end Main Sidebar Container -->
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>전자 결재</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">전자 결재</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+
+
+    <section class="content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-outline card-info">
+            <div class="card-header">
+              <h3 class="card-title">
+               전자결재 | <strong>결재문서 양식 만들기</strong>
+              </h3>
+              <br>
+              <hr>
+            </div>
+            <!-- /.card-header -->
+            <!-- Horizontal Form -->
+            <div class="card card-info">
+              <div class="card-header">
+                <h3 class="card-title">approval-form-write</h3>
+              </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+              <form action="approval-form-write" method="post" class="approval-form-write" >
+                <div class="card-body">
+                  <div class="form-group row">
+                    <label for="approvalTitle" class="col-sm-2 col-form-label">양식 제목</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="approvalFormTitle" class="form-control" id="approvalTitle" placeholder="approvalTitle">
+                    </div>
+                  </div>
+                  <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">사용 여부</label>
+                    <div class="col-sm-10">
+                      <label for="true">사용</label>&nbsp;<input type="radio" name="documentActive" value="1"  id="true"> &nbsp;&nbsp;
+                      <label for="false">미사용</label> &nbsp;<input type="radio" name="documentActive" value="0" id="false">
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="input-group-prepend">
+                    <button type="button" name="approval-form-btn" class="btn btn-success dropdown-toggle dropdown-icon" data-toggle="dropdown" th:text="'결재양식'">
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li th:each="form : ${approvalForm}" th:if="${form.documentActive}" class="dropdown-item">
+                        <a href="javascript:" class="load-document" th:data-approvalformtitle="${form.approvalFormTitle}" th:text="${form.approvalFormTitle}"></a>
+                      </li>
+                    </ul>
+                  </div>
+                  <br>
+                  <div>
+                    <button type="button" class="btn btn-block btn-outline-info" id="go-back-btn">목록보기</button>
+                  <button type="submit" class="btn btn-info">추가하기</button>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <label for="summernote">문서</label>
+                  <textarea id="summernote" name="approvalFormDocument"></textarea>
+                </div>
+              </form>
+            </div>
+
+
+          </div>
+        </div>
+        <!-- /.col-->
+      </div>
+      <!-- ./row -->
+
+      <!-- ./row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <dib th:replace="~{/modules/main-footer}"></dib>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- Summernote -->
+<script src="../../plugins/summernote/summernote-bs4.min.js"></script>
+<!-- CodeMirror -->
+<script src="../../plugins/codemirror/codemirror.js"></script>
+<script src="../../plugins/codemirror/mode/css/css.js"></script>
+<script src="../../plugins/codemirror/mode/xml/xml.js"></script>
+<script src="../../plugins/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+<script type="text/javascript">
+  $(function () {
+   // Initialize Summernote
+   $('#summernote').summernote({
+     height: 600
+   });
+
+    $('#go-back-btn').on('click', function(event) {
+       location.href = 'approval-form-list';
+    });
+
+
+   // Event listener for loading document
+   $('.load-document').on('click', function(event) {
+     event.preventDefault();
+     const approvalFormTitleId = $(this).data('approvalformtitle');
+     console.log('Selected form title ID:', approvalFormTitleId);
+
+     $('#approvalTitle').val(approvalFormTitleId);
+
+     $.ajax({
+       url: '/forms/approval/get-document',
+       method: 'GET',
+       dataType: 'json', // Expecting JSON response
+       data: { 'approvalFormTitleId': approvalFormTitleId },
+       success: function(response) {
+         console.log('Document content:', response);  // Debug log
+         // Load data into Summernote editor
+         if (response && response.approvalFormDocument) {
+           $('#summernote').summernote('code', response.approvalFormDocument);
+         } else {
+           alert('Failed to load document content.');
+         }
+       },
+       error: function(xhr, status, error) {
+         // Log error message to console
+         console.error('Template load error:', error);
+       }
+     });
+   });
+ });
+</script>
+</body>
+</html>

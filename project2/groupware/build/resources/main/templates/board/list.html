@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><!-- Google Font: Source Sans Pro -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>공지사항 목록</title>
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="../../plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <div th:replace="~{/modules/main-header-navbar}"></div>
+    <div th:replace="~{/modules/main-sidebar}"></div>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>공지사항</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Board</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <!-- /.container-fluid -->
+        </section>
+        <!-- Main content -->
+        <section class="content" id="board-list">
+
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <div th:replace="~{/modules/main-footer}"></div>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/adminlte.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../dist/js/demo.js"></script>
+<!-- Page specific script -->
+<script src="../../plugins/jquery/jquery.notification.js"></script>
+
+<script th:inline="javascript">
+$(function() {
+    // 서버에서 전달한 alert 메시지를 확인하는 방법
+    const alertMessage = /*[[${alertMessage}]]*/ null; // Thymeleaf를 사용하여 메시지를 가져옴
+
+    // alert 메시지가 존재하면 띄우기
+    if (alertMessage) {
+        alert(alertMessage);
+    }
+    let searchText = ""; // 초기 검색어는 빈 문자열로 설정
+    let pageNo = 1; // 페이지 번호 설정
+    function loadBoardList(searchText, pageNo) {
+        let url = '/board/board-list'; // 동일한 URL 사용
+        url += '?&searchText=' + encodeURIComponent(searchText) + '&pageNo=' + pageNo;
+
+        $('#board-list').load(url, function() {
+        });
+    }
+
+    $(document).ready(function() {
+        loadBoardList(searchText, pageNo); // 기본 보드 리스트 로드
+
+        // 검색 버튼 클릭 이벤트
+        $('#board-list').on('click', '.btn-search', function() {
+            searchText = $('#searchInput').val(); // 검색어 가져오기
+            loadBoardList(searchText, 1); // 검색어를 인자로 추가하여 함수 호출
+        });
+    });
+
+
+
+     const empId = /*[[${session.loginUser.empId}]]*/ 0;
+    initializeWebSocket(empId);
+
+  });
+</script>
+</body>
+</html>
