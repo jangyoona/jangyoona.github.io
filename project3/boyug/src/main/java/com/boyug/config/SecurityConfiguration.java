@@ -83,7 +83,7 @@ public class SecurityConfiguration {
                         .logoutUrl("/userView/account/logout")
                         .logoutSuccessHandler(logoutSuccessHandler())
                         .invalidateHttpSession(true) // 로그아웃시 로그인 했던 모든 정보를 삭제
-                        .deleteCookies("JSESSIONID") // 로그아웃시 JSESSIONID 쿠키 삭제 톰캣이 만든 세션Id 이름 = JSESSIONID
+                        .deleteCookies("JSESSIONID") // 톰캣이 만든 세션Id
                         .logoutSuccessUrl("/home")); // 로그아웃시 리다이렉트할 URL
         // OAuth2
         http

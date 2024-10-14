@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SocketHandler extends TextWebSocketHandler {
-    // SocketHandler : 메시지 핸들링하는 클래스
     // https://myhappyman.tistory.com/101
     // https://micropilot.tistory.com/category/Spring%204/WebSocket%20with%20Interceptor
 
@@ -186,7 +185,6 @@ public class SocketHandler extends TextWebSocketHandler {
         // 1번방 소켓 종료
         String uri = session.getUri().toString();
         String roomNumber = extractRoomNumberFromUri(uri);
-
 //        if (session != null && session.isOpen()) {
 //            roomSessionsMap.computeIfPresent(String.valueOf(currentUser.getUserId()), (key, sessions) -> {
 //                sessions.remove(session);

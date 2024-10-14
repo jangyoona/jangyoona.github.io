@@ -32,7 +32,6 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 //    @Bean
 //    public SocketHandler socketHandler() { return new SocketHandler(); }
 
-
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
@@ -52,12 +51,6 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
             attributes.put("loginUser", userDetails);
         }
 
-//        if (authentication != null && authentication.isAuthenticated()) {
-//            WebUserDetails userDetails = (WebUserDetails) authentication.getPrincipal();
-//            // SocketHandler 가 security 인증 정보를 바로 못 읽어서 WebSocket 세션의 속성에 저장
-//            attributes.put("loginUser", userDetails);
-//        }
-
         // 추가
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
         HttpServletRequest req = servletRequest.getServletRequest();
@@ -67,24 +60,6 @@ public class CustomHandshakeInterceptor implements HandshakeInterceptor {
 
         String userName = req.getParameter("userName");
         attributes.put("userPhone", userName);
-
-//        System.out.println(SocketHandler.getRoomSessionsMap());
-//        String userId = String.valueOf(userDetails.getUser().getUserId());
-//        String uri = request.getURI().toString();
-//
-//        List<WebSocketSession> userSession = SocketHandler.getRoomSessionsMap().get(userId);
-//        // roomSessionsMap에 접근
-//        if(uri.equals("http://localhost:8081/chatting/1")) {
-//            if (SocketHandler.getRoomSessionsMap() != null && userSession != null) {
-//                boolean sessionExists = userSession.stream().anyMatch(session ->
-//                        session.getUri().toString().equals("ws://localhost:8081/chatting/1"));
-//
-//                if (sessionExists) {
-//                    response.setStatusCode(HttpStatus.FORBIDDEN);
-//                    return false; // 연결 거부
-//                }
-//            }
-//        }
         return true;
     }
 

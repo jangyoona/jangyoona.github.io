@@ -19,8 +19,6 @@ public class CustomOAuth2User implements OAuth2User, UserDetails {
     private final List<RoleDto> roles;
 
     private final String userId; // 소셜 고유 아이디
-//    private final String profileImage; // 프로필 이미지 URL
-
 
     public CustomOAuth2User(OAut2Response.OAuth2Response oAuth2Response, String role, String userId, UserDto user, List<RoleDto> roles) {
         this.oAuth2Response = oAuth2Response;

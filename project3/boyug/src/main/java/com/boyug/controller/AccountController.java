@@ -237,7 +237,7 @@ public class AccountController {
                 inputStream.close();
                 System.out.println("File downloaded: " + targetFilePath);
             } else {
-                System.out.println("Failed to download file. HTTP response code: " + connection.getResponseCode());
+                System.out.println("Failed to download _HTTP response code: " + connection.getResponseCode());
             }
 
         } catch (IOException e) {
